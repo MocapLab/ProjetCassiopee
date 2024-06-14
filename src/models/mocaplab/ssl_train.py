@@ -2,16 +2,20 @@ from datetime import datetime
 
 import torch
 from torch.utils.data import DataLoader
-
+import os
+import sys
+src_folder = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),'..\..\..'))
+sys.path.append(src_folder)
 from train import *
 from plot_results import *
 
-from cnn.cnn_dataset import MocaplabDatasetCNN
+from src.dataset import MocaplabDatasetCNN
 from cnn.cnn import TestCNN, SSL_CNN
-from fc.fc_dataset import MocaplabDatasetFC
-from fc.fc import MocaplabFC, SSL_FC
-from lstm.lstm_dataset import MocaplabDatasetLSTM
+from src.dataset import MocaplabDatasetFC
+from fc.fc import MocaplabFC
+from src.dataset import MocaplabDatasetLSTM
 #from lstm.lstm import LSTM, SSL_LSTM
+from src.setup import setup_python, setup_pytorch
 
 def plot_results(train_losses, validation_losses,
                  run_epochs, architecture, start_timestamp, device,
@@ -58,10 +62,10 @@ def plot_results(train_losses, validation_losses,
     axs[1].table(cellText=data, loc="center")
     axs[1].axis("off")
 
-    plt.show()
+    plt.show(block=False)
 
     # Save figure
-    plt.savefig("self_supervised_learning/dev/ProjetCassiopee/train_results/mocaplab/" + model_path + ".png")
+    plt.savefig(f"{src_folder}/train_results/mocaplab/{model_path}.png")
 
 
 
@@ -108,7 +112,7 @@ if __name__ == "__main__" :
     # Datasets
     print("#### CNN Datasets ####")
 
-    data_path = 'self_supervised_learning/dev/ProjetCassiopee/data/mocaplab/Cassiopée_Allbones'
+    data_path = '%s/data/mocaplab/Cassiopée_Allbones'%src_folder
     dataset = MocaplabDatasetCNN(data_path, padding=True)
     
     # Split dataset
@@ -228,9 +232,8 @@ if __name__ == "__main__" :
                  [])'''
     
     # Save model
-    
-    torch.save(encoder_layers_to_save, "self_supervised_learning/dev/ProjetCassiopee/src/models/mocaplab/all/saved_models/encoder_" + model_path + ".ckpt")
-    torch.save(decoder_layers_to_save, "self_supervised_learning/dev/ProjetCassiopee/src/models/mocaplab/all/saved_models/decoder_" + model_path + ".ckpt")
+    torch.save(encoder_layers_to_save, "%s/src/models/mocaplab/all/saved_models/SSL_CNN/encoder_%s.ckpt"%(src_folder, model_path))
+    torch.save(decoder_layers_to_save, "%s/src/models/mocaplab/all/saved_models/SSL_CNN/decoder_%s.ckpt"%(src_folder, model_path))
 
     # End training
 
@@ -256,7 +259,7 @@ if __name__ == "__main__" :
     # Datasets
     print("#### CNN Datasets ####")
 
-    data_path = 'self_supervised_learning/dev/ProjetCassiopee/data/mocaplab/Cassiopée_Allbones'
+    data_path = '%s/data/mocaplab/Cassiopée_Allbones'%src_folder
     dataset = MocaplabDatasetCNN(data_path, padding=True)
     
     # Split dataset
@@ -290,7 +293,8 @@ if __name__ == "__main__" :
     # Create neural network
     print("#### CNN Model ####")
     model = TestCNN(nb_classes=2).to(DEVICE)
-    state_dict = torch.load("self_supervised_learning/dev/ProjetCassiopee/src/models/mocaplab/all/saved_models/encoder_" + model_path + ".ckpt")
+    
+    state_dict = torch.load("%s/src/models/mocaplab/all/saved_models/SSL_CNN/encoder2_%s.ckpt"%(src_folder, model_path))
     
     flattened_state_dict = {}
     for key, val in state_dict.items():
@@ -362,7 +366,7 @@ if __name__ == "__main__" :
                  [])
     
     # Save model
-    torch.save(model.state_dict(), "self_supervised_learning/dev/ProjetCassiopee/src/models/mocaplab/all/saved_models/" + model_path + ".ckpt")
+    torch.save(model.state_dict(), "%s/src/models/mocaplab/all/saved_models/SSL_CNN/%s.ckpt"%(src_folder, model_path))
     
     # End training
 

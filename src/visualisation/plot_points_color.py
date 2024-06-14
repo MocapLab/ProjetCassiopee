@@ -1,35 +1,26 @@
 import torch
 from torch.utils.data import DataLoader
-import sys
-import pandas as pd
-
-from itertools import chain
-import numpy as np
-import random
-import matplotlib.pyplot as plt
-import torch 
-import torch.nn as nn
 import torch.nn.functional as F
-
+import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
+from PIL import Image as im
 
-sys.path.append("/home/self_supervised_learning_gr/self_supervised_learning/dev/ProjetCassiopee/")
+import sys
+import os
+
+src_folder = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),'..\..'))
+sys.path.append(src_folder)
+
 from src.dataset import MocaplabDatasetCNN
 from src.setup import setup_python, setup_pytorch
 from src.models.mocaplab import TestCNN
 
-from src.dataset import MocaplabDatasetFC
-from src.setup import setup_python, setup_pytorch
-from src.models.mocaplab import MocaplabFC
-
 
 def create_images(i, data, label, prediction, nom, heatmap):
 
-    import os
-    if not os.path.exists(f"/home/self_supervised_learning_gr/self_supervised_learning/dev/ProjetCassiopee/visualisation_results/mocaplab/animation/{nom}"):
-        os.mkdir(f"/home/self_supervised_learning_gr/self_supervised_learning/dev/ProjetCassiopee/visualisation_results/mocaplab/animation/{nom}")
+    if not os.path.exists(f"{src_folder}/train_results/mocaplab/animation/{nom}"):
+        os.mkdir(f"{src_folder}/train_results/mocaplab/animation/{nom}")
 
     print(f"i={i}")
     print(f"data={data}")
@@ -43,7 +34,12 @@ def create_images(i, data, label, prediction, nom, heatmap):
     model = "CNN"
 
     data = data.numpy()
+    data = im.fromarray(data[0,...])
+    data = data.resize((237, 100))
 
+    data = np.array(data).T
+    print(data.shape)
+    
     x_data = data[:, 0::3]
     y_data = data[:, 1::3]
     z_data = data[:, 2::3]
@@ -106,16 +102,14 @@ def create_images(i, data, label, prediction, nom, heatmap):
 
         # Update the colors of the points based on the joints_color list
         colors = ["limegreen" if idx in joints_color[frame] else "blue" for idx in range(len(x_data[frame]))]
-        print(len(colors))
-        print(colors)
+
         sizes = [200 if idx in joints_color[frame] else 50 for idx in range(len(x_data[frame]))] # Set larger size for points with red color
-        print(len(sizes))
-        print(sizes)
+
         scatter.set_edgecolors(colors)
         scatter.set_facecolors(colors)
         # scatter.set_sizes(sizes) # Broken
         
-        fig.savefig(f"/home/self_supervised_learning_gr/self_supervised_learning/dev/ProjetCassiopee/visualisation_results/mocaplab/animation/{nom}/{frame}.png")
+        fig.savefig(f"{src_folder}/train_results/mocaplab/animation/{nom}/{frame}.png")
         plt.close()
 
 def create_animation(i, data, label, prediction, nom, heatmap):
@@ -244,8 +238,12 @@ def create_animation(i, data, label, prediction, nom, heatmap):
     joints_color = heatmap
 
     model = "CNN"
-
     data = data.numpy()
+    data = im.fromarray(data[0,...])
+    data = data.resize((237, 100))
+
+    data = np.array(data)
+    print(data.shape)
 
     x_data = data[:, 0::3]
     y_data = data[:, 1::3]
@@ -321,12 +319,12 @@ def create_animation(i, data, label, prediction, nom, heatmap):
     animation = FuncAnimation(fig, update, frames=len(data), blit=True)
     
     # Save the animation as a GIF
-    animation.save(f"/home/self_supervised_learning_gr/self_supervised_learning/dev/ProjetCassiopee/src/visualisation/mocaplab_points_color/{nom}.gif",
+    animation.save(f"{src_folder}/src/visualisation/mocaplab_points_color/{nom}.gif",
                    writer='pillow')
     plt.close(fig)
 
 
-def create_all_animations(results_dir="visualisation_results/mocaplab/supervised"):
+def create_all_animations(results_dir="train_results/mocaplab/supervised"):
     # Begin set-up
     print("#### Set-Up ####")
 
@@ -337,46 +335,44 @@ def create_all_animations(results_dir="visualisation_results/mocaplab/supervised
     DEVICE = setup_pytorch(gpu=False)
 
     print("#### Dataset ####")
-    dataset_fc = MocaplabDatasetFC(path=("/home/self_supervised_learning_gr/self_supervised_learning/dev/"
-                                      "ProjetCassiopee/data/mocaplab/Cassiopée_Allbones"),
+    # dataset_fc = MocaplabDatasetFC(path=(f"{src_folder}/data/mocaplab/Cassiopée_Allbones"),
+    #                             padding=True, 
+    #                             train_test_ratio=8,
+    #                             validation_percentage=0.01)
+    dataset_cnn = MocaplabDatasetCNN(path=(f"{src_folder}/data/mocaplab/Cassiopée_Allbones"),
                                 padding=True, 
                                 train_test_ratio=8,
                                 validation_percentage=0.01)
-    
     print("#### Data Loader ####")
-    data_loader_fc = DataLoader(dataset_fc,
-                             batch_size=1,
-                             shuffle=False)
+    # data_loader_fc = DataLoader(dataset_fc,
+    #                          batch_size=1,
+    #                          shuffle=False)
 
-    dataset_cnn = MocaplabDatasetCNN(path=("/home/self_supervised_learning_gr/self_supervised_learning/dev/"
-                                      "ProjetCassiopee/data/mocaplab/Cassiopée_Allbones"),
-                                padding=True, 
-                                train_test_ratio=8,
-                                validation_percentage=0.01)
     
+    print(dataset_cnn.max_length)
     data_loader_cnn = DataLoader(dataset_cnn,
                              batch_size=1,
                              shuffle=False)
 
     
     print("#### Model ####")
-    model = MocaplabFC(dataset_fc.max_length*237).to(DEVICE)
-    model.load_state_dict(torch.load(("/home/self_supervised_learning_gr/self_supervised_learning/dev/ProjetCassiopee/src/models/mocaplab/fc/saved_models/old/model_20240325_141951.ckpt"),
-                                     map_location=torch.device("cpu")))
-    model = model.to(DEVICE)
-    model = model.double()
+    # model = MocaplabFC(dataset_fc.max_length*237).to(DEVICE)
+    # model.load_state_dict(torch.load((f"{src_folder}/src/models/mocaplab/all/saved_models/FC/model_20240325_141951.ckpt"),
+    #                                  map_location=torch.device("cpu")))
+    # model = model.to(DEVICE)
+    # model = model.double()
   
 
     #intialize the CNN model
-    cnn = TestCNN(softmax=False)
+    cnn = TestCNN()
 
     # Load the trained weights cnn old model
-    cnn.load_state_dict(torch.load(("/home/self_supervised_learning_gr/self_supervised_learning/dev/ProjetCassiopee/src/models/mocaplab/cnn/saved_models/old/model_20240325_154652.ckpt"),
-    #                                 map_location=torch.device("cpu")))
+    cnn.load_state_dict(torch.load((f"{src_folder}/src/models/mocaplab/all/saved_models/CNN/CNN_20240612_123241.ckpt"),
+                                    map_location=torch.device("cpu")))
 
     # Load the trained weights cnn new model
     #cnn.load_state_dict(torch.load(("/home/self_supervised_learning_gr/self_supervised_learning/dev/ProjetCassiopee/src/models/mocaplab/cnn/saved_models/CNN_20240514_211739.ckpt"),
-                                    map_location=torch.device("cpu")))
+                                    # map_location=torch.device("cpu")))
 
     # set the evaluation mode
     cnn.eval()
@@ -386,10 +382,12 @@ def create_all_animations(results_dir="visualisation_results/mocaplab/supervised
     for k, img in enumerate(data_loader_cnn):
         ###TO GET THE HEATMAP LIST OF 10 MOST IMPORTANT JOINTS###
         img, label, name = img
-        print('img', k, img.shape)
+        print(f"img {os.path.splitext(name[0])[0]}: {k:4} / {len(data_loader_cnn)} ")
         # get the most likely prediction of the model
         pred = cnn(img)
 
+        if np.array_equal(pred[0].detach().numpy().round(decimals=0), label.numpy().round(decimals=0)):
+            print("error")
         # get the gradient of the output with respect to the parameters of the model
         pred[:,0].backward()
 
@@ -434,24 +432,23 @@ def create_all_animations(results_dir="visualisation_results/mocaplab/supervised
         # normalize the heatmap
         heatmap /= torch.max(heatmap)
 
-        nom = f'{k}_{name[0]}'
-        fig2 = plt.figure()
+        nom = f'{k}_{os.path.splitext(name[0])[0]}'
+
         # draw the heatmap
         plt.matshow(heatmap.squeeze())
-        plt.savefig(f"/home/self_supervised_learning_gr/self_supervised_learning/dev/ProjetCassiopee/src/visualisation/heatmap/oldmodel_heatmap_cnn2D_{nom}.png")
-        plt.close(fig2)
+        plt.savefig(f"{src_folder}/src/visualisation/model_heatmap_cnn2D_{nom}.png")
 
     print("#### Plot ####")
-    for i, batch in enumerate(data_loader_fc):
+    for i, batch in enumerate(data_loader_cnn):
         
-        print(f"## Batch {i:4} / {len(data_loader_fc)} ##")
+        print(f"## Batch {i:4} / {len(data_loader_cnn)} ##")
         data, label, name = batch
-        data = data.to(DEVICE)
-        label = label.to(DEVICE)
+        data = data.to(torch.float32).to(DEVICE)
+        label = label.to(torch.float32).to(DEVICE)
     
         # Make predictions for batch
-        data_flattened = data.view(data.size(0), -1)
-        output = model(data_flattened.double())
+        #data_flattened = data.view(data.size(0), -1)
+        output = cnn(data)
 
         # Update accuracy variables
         _, predicted = torch.max(output.data, dim=1)
@@ -462,7 +459,7 @@ def create_all_animations(results_dir="visualisation_results/mocaplab/supervised
         
         data = data.squeeze(0)
         
-        nom = f"oldmdel_{i}_{name[0]}_{label}_{predicted}"
+        nom = f"cnn_{i}_{name[0]}_{label}_{predicted}"
         
         create_images(i, data, label, predicted, nom, heatmap_data[i])
         create_animation(i, data, label, predicted, nom, heatmap_data[i])
@@ -728,3 +725,6 @@ def create_all_animations(results_dir="visualisation_results/mocaplab/supervised
 
     print("#### End ####")
     '''
+
+if __name__ == "__main__":
+    create_all_animations()

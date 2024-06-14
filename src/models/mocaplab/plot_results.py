@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
+src_folder = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),'..\..\..'))
 
 def plot_results(train_accuracies, train_losses,
                  validation_accuracies, validation_losses,
@@ -57,7 +59,10 @@ def plot_results(train_accuracies, train_losses,
     axs[1, 1].table(cellText=data, loc="center")
     axs[1, 1].axis("off")
 
-    plt.show()
+    plt.draw()
 
     # Save figure
-    plt.savefig("self_supervised_learning/dev/ProjetCassiopee/train_results/mocaplab/" + model_path + ".png")
+    if not os.path.exists("%s/train_results/mocaplab"%src_folder):
+        os.makedirs("%s/train_results/mocaplab"%src_folder)
+    plt.savefig("%s/train_results/mocaplab/%s.png"%(src_folder, model_path))
+    plt.show(block=False)

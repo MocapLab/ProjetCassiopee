@@ -7,8 +7,10 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
 import sys
+import os
+src_folder = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),'..\..\..'))
 
-sys.path.append("/home/self_supervised_learning_gr/self_supervised_learning/dev/ProjetCassiopee/")
+sys.path.append(src_folder)
 from src.dataset import MocaplabDatasetFC
 from torch.utils.data import DataLoader
 
@@ -24,7 +26,7 @@ from fc.train import *
 
 # Create figure
 #fig, axs = plt.subplots(1, 1, figsize=(16, 9))
-dataset = MocaplabDatasetFC(path="self_supervised_learning/dev/ProjetCassiopee/data/mocaplab/Cassiopée_Allbones",
+dataset = MocaplabDatasetFC(path="%s/data/mocaplab/Cassiopée_Allbones"%src_folder,
                               padding = True, 
                               train_test_ratio = 8,
                               validation_percentage = 0.01)
@@ -37,7 +39,7 @@ for i, (x, y) in enumerate(data_loader):
     x = x.squeeze().numpy()
     fig = plt.figure()
     plt.matshow(x)
-    plt.savefig("/home/self_supervised_learning_gr/self_supervised_learning/dev/ProjetCassiopee/src/visualisation/array/array.png")
+    plt.savefig("%s/src/visualisation/array/array.png"%src_folder)
     plt.show()
     break
 

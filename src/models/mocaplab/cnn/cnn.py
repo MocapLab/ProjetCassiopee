@@ -61,7 +61,8 @@ class TestCNN(nn.Module):
         x = F.relu(self.conv3_3(x))
 
         #register the hook
-        hook = x.register_hook(self.activations_hook)
+        if x.requires_grad:
+            hook = x.register_hook(self.activations_hook)
 
         # print("Pool 3")
         x = self.pool(x)

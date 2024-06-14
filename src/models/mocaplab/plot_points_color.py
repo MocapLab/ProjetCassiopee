@@ -1,24 +1,18 @@
 import sys
-import pandas as pd
-
+import os
 import torch
 from torch.utils.data import DataLoader
 
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
-
-sys.path.append("/home/self_supervised_learning_gr/self_supervised_learning/dev/ProjetCassiopee/")
-from src.dataset import MocaplabDatasetFC
+import torch.nn.functional as F
+src_folder = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),'..\..\..'))
+sys.path.append(src_folder)
+from src.dataset import MocaplabDatasetCNN
 from src.setup import setup_python, setup_pytorch
-from src.dataset import MocaplabDatasetFC
-from src.models.mocaplab import MocaplabFC
+from src.models.mocaplab import TestCNN
 from fc.train import *
 
-# from ...setup import setup_python, setup_pytorch
-# from ...dataset.mocaplab_fc import MocaplabDatasetFC
-# from ...models.mocaplab.fc import MocaplabFC
-# from ...models.mocaplab.fc.train import train
 
 
 def plot_animation(i, data, label, prediction, nom, heatmap):
@@ -149,13 +143,15 @@ def plot_animation(i, data, label, prediction, nom, heatmap):
     model = "CNN"
 
     data = data.numpy()
-    
+    print(data.shape)
+    data.reshape(100, 237)
     x_data = data[:, 0::3]
     y_data = data[:, 1::3]
     z_data = data[:, 2::3]
 
     fig = plt.figure()
-
+    print(f"x_data={x_data}")
+    print(x_data.shape)
     ax = fig.add_subplot(111, projection="3d")
     ax.set_xlim(min([min(x_data[i]) for i in range(len(x_data))]),
                 max([max(x_data[i]) for i in range(len(x_data))]))
@@ -228,7 +224,7 @@ def plot_animation(i, data, label, prediction, nom, heatmap):
     animation = FuncAnimation(fig, update, frames=len(data), blit=True)
     
     # Save the animation as a GIF
-    animation.save(f"/home/self_supervised_learning_gr/self_supervised_learning/dev/ProjetCassiopee/src/visualisation/mocaplab_points_color/{nom}.gif",
+    animation.save(f"{src_folder}/src/visualisation/mocaplab_points_color/{nom}.gif",
                    writer='pillow')
     plt.close()
 
@@ -245,8 +241,7 @@ if __name__ == "__main__":
     DEVICE = setup_pytorch(gpu=False)
 
     print("#### Dataset ####")
-    dataset = MocaplabDatasetFC(path=("/home/self_supervised_learning_gr/self_supervised_learning/dev/"
-                                      "ProjetCassiopee/data/mocaplab/Cassiopée_Allbones"),
+    dataset = MocaplabDatasetCNN(path=(f"{src_folder}/data/mocaplab/Cassiopée_Allbones"),
                                 padding=True, 
                                 train_test_ratio=8,
                                 validation_percentage=0.01)
@@ -257,23 +252,22 @@ if __name__ == "__main__":
                              shuffle=False)
     
     print("#### Model ####")
-    model = MocaplabFC(dataset.max_length * 237).to(DEVICE)
-    model.load_state_dict(torch.load(("/home/self_supervised_learning_gr/self_supervised_learning/dev/"
-                                      "ProjetCassiopee/src/models/mocaplab/fc/saved_models/model_20240325_141951.ckpt"),
+    model = TestCNN(nb_classes=2).to(DEVICE)
+    model.load_state_dict(torch.load((f"{src_folder}/src/models/mocaplab/all/saved_models/CNN/CNN_20240612_123241.ckpt"),
                                      map_location=torch.device("cpu")))
     model = model.to(DEVICE)
-    model = model.double()
+    model = model
     
     print("#### Plot ####")
     for i, batch in enumerate(data_loader) :
-        
         print(f"## Batch {i:4} / {len(data_loader)} ##")
-        data, label = batch
-        data = data.to(DEVICE)
-        label = label.to(DEVICE)
-    
-        data_flattened = data.view(data.size(0), -1)
-        output = model(data_flattened.double())
+        data, label, name = batch
+        data = data.to(torch.float32).to(DEVICE)
+        label = label.to(torch.float32).to(DEVICE)
+        #print(data.size())
+        #data_flattened = data.view(data.size(0), -1)
+        # print(data_flattened.size())
+        output = model(data)
     
         _, predicted = torch.max(output.data, dim=1)
 
@@ -289,20 +283,20 @@ if __name__ == "__main__":
         img = next(iter(data_loader))[i]
 
         # get the most likely prediction of the model
-        pred = cnn(img)
+        pred = model(img)
 
         # get the gradient of the output with respect to the parameters of the model
         pred[:,0].backward()
 
         # pull the gradients out of the model
-        gradients = cnn.get_activations_gradient()
+        gradients = model.get_activations_gradient()
 
         # pool the gradients across the channels
         pooled_gradients = torch.mean(gradients, dim=[0, 2, 3])
 
 
         # get the activations of the last convolutional layer
-        activations = cnn.get_activations(img).detach()
+        activations = model.get_activations(img).detach()
 
 
         # weight the channels by corresponding gradients
@@ -319,12 +313,12 @@ if __name__ == "__main__":
         #heatmap_resized = torch.squeeze(heatmap_resized)
         ten_max_joints_all_frames = []
 
-        for i in range(1, 101):
+        for i in range(0, 100):
             max_for_one_joint = []
             for j in range(0, 79): #237/3
-                max = torch.max(heatmap_resized[i][j*3:j*3+2])
+                max = torch.max(heatmap_resized[0][0][i][j*3:j*3+3])
                 max_for_one_joint.append(max)
-            _, max_activations_indices = torch.topk(max_for_one_joint, k=10)
+            _, max_activations_indices = torch.topk(torch.as_tensor(max_for_one_joint), k=10)
             ten_max_joints_all_frames.append(max_activations_indices)
 
         plot_animation(i, data, label, predicted, nom, ten_max_joints_all_frames)

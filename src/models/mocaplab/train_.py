@@ -93,9 +93,8 @@ def evaluate(model, data_loader, loss_function, device):
             total += len(label)
             batch_correct = (predicted == label).sum().item()
             correct += batch_correct
-
             # Compute loss
-            loss = loss_function(output, label)
+            loss = loss_function(output, label.cuda().long())
 
             # Update batch loss
             validation_loss += loss.item()

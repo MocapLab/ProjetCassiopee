@@ -13,8 +13,8 @@ class LSTM(nn.Module) :
 
     def forward(self, x):
         # Initialize hidden state with zeros
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device).double()
-        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device).double()
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device).float()
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device).float()
         
         x = self.fc1(x)
 

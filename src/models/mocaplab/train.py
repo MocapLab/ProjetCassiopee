@@ -142,7 +142,7 @@ def train_one_epoch_fc(model, data_loader, loss_function, optimizer, device):
         correct += batch_correct
 
         # Compute loss
-        loss = loss_function(output, label)
+        loss = loss_function(output, label.cuda().long())
 
         # Compute gradient loss
         loss.backward()
@@ -197,7 +197,7 @@ def evaluate_fc(model, data_loader, loss_function, device):
             correct += batch_correct
 
             # Compute loss
-            loss = loss_function(output, label)
+            loss = loss_function(output, label.cuda().long())
 
             # Update batch loss
             validation_loss += loss.item()
@@ -247,7 +247,7 @@ def train_one_epoch_lstm(model, data_loader, loss_function, optimizer, device):
         correct += batch_correct
 
         # Compute loss
-        loss = loss_function(output, label)
+        loss = loss_function(output, label.cuda().long())
 
         # Compute gradient loss
         loss.backward()
@@ -301,7 +301,7 @@ def evaluate_lstm(model, data_loader, loss_function, device):
             correct += batch_correct
 
             # Compute loss
-            loss = loss_function(output, label)
+            loss = loss_function(output, label.cuda().long())
 
             # Update batch loss
             validation_loss += loss.item()
@@ -351,7 +351,7 @@ def train_one_epoch_cnn(model, data_loader, loss_function, optimizer, device):
         correct += batch_correct
 
         # Compute loss
-        loss = loss_function(output, label)
+        loss = loss_function(output, label.cuda().long())
 
         # Compute gradient loss
         loss.backward()
@@ -405,7 +405,7 @@ def evaluate_cnn(model, data_loader, loss_function, device):
             correct += batch_correct
 
             # Compute loss
-            loss = loss_function(output, label)
+            loss = loss_function(output, label.cuda().long())
 
             # Update batch loss
             validation_loss += loss.item()
@@ -754,7 +754,7 @@ def train_one_epoch_ssl_cnn(
         output = model(data)
 
         # Compute loss
-        loss = loss_function(output, data)
+        loss = loss_function(output, label.cuda().long())
 
         # Compute gradient loss
         loss.backward()
@@ -800,7 +800,7 @@ def evaluate_ssl_cnn(
             output = model(data)
 
             # Compute loss
-            loss = loss_function(output, data)
+            loss = loss_function(output, label.cuda().long())
 
             # Update batch loss
             validation_loss += loss.item()

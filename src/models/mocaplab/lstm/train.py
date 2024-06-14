@@ -1,16 +1,12 @@
 import torch
 from sklearn.metrics import confusion_matrix
-import seaborn as sns
-import numpy as np
-import matplotlib.pyplot as plt
 from src.train import create_optimizer
-from PIL import Image as im
 
 def train_one_epoch(model, data_loader, loss_function, optimizer, device):
 
     # Enable training
     model.train(True).double()
-
+    model.to(device)
     # Initialise accuracy variables
     total = 0
     correct = 0

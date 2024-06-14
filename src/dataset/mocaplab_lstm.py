@@ -3,6 +3,7 @@ import sys
 import random
 import pandas as pd
 import csv
+import torch
 from torch.utils.data import Dataset
 import numpy as np
 
@@ -11,11 +12,10 @@ class MocaplabDatasetLSTM(Dataset):
     PyTorch dataset for the Mocaplab dataset.
     """
 
-    def __init__(self, path, return_filename, padding=True, train_test_ratio=8, validation_percentage=0.01, nb_samples=None):
+    def __init__(self, path, padding=True, train_test_ratio=8, validation_percentage=0.01, nb_samples=None):
         super().__init__()
         self.path = path
         self.padding = padding
-        self.return_filename = return_filename
         self.train_test_ratio = train_test_ratio
         self.validation_percentage = validation_percentage
 
@@ -62,7 +62,7 @@ class MocaplabDatasetLSTM(Dataset):
     
     def _load_data(self):
         # Retrieve labels
-        labels = pd.read_csv(os.path.join(os.path.dirname(self.path),
+        labels = pd.read_csv(os.path.join(self.path,
                                           "Annotation_gloses.csv"), sep="\t")
         labels.dropna(inplace=True)
         self.labels = {n: c for n, c in zip(labels["Nom.csv"], labels["Mono/Bi"])}
@@ -94,6 +94,5 @@ class MocaplabDatasetLSTM(Dataset):
             for _ in range(self.max_length-len(data)) :
                 data.append([0.0 for _ in range(237)])
             data = np.stack(data)
-        if self.return_filename :
-            return data, label, self.x[idx]
-        return data, label
+
+        return data, label, self.x[idx]

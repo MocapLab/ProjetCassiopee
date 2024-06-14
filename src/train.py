@@ -1,8 +1,5 @@
 import torch
-import numpy as np
 from sklearn.metrics import confusion_matrix
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 def create_optimizer(optimizer_type, model, learning_rate, momentum=0):
     """
