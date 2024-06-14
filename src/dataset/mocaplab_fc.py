@@ -48,20 +48,21 @@ class MocaplabDatasetFC(Dataset):
                     header = line
                     self.header = list(set(header))
                     id = {}
-                    for i, bone in enumerate(self.header):
-                        if bone not in id.keys():
+                    for i, bone in enumerate(header):
+                        if bone not in id.keys() and bone in self.bones_to_keep:
                             id[bone] = [i]
-                        else:
-                            id[bone].extend(i)
+                        elif bone in id.keys() and bone in self.bones_to_keep:
+                            id[bone].extend([i])
                 if n>=2:
                     values = []
-                    for bone in id.keys():
-                        for i in id[bone]:
-                            values.append(float(line[i]))
-                    data.append(values)
+                    if id:
+                        for bone in id.keys():
+                            for i in id[bone]:
+                                values.append(float(line[i]))
+                        data.append(values)
                 n+=1
         data = np.stack(data)
-        if data.shape[1]*3>len(self.bones_to_keep):
+        if data.shape[1]!=len(self.bones_to_keep)*3:
             raise ValueError
         return data
 

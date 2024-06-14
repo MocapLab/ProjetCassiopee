@@ -49,7 +49,7 @@ if __name__ == "__main__" :
     Fully connected Training
     '''
     # Training parameters
-    BATCH_SIZE = 2 # Batch size
+    BATCH_SIZE = 30 # Batch size
     LOSS_FUNCTION = torch.nn.CrossEntropyLoss() # Loss function
     OPTIMIZER_TYPE = "SGD"                      # Type of optimizer "Adam" or "SGD"
     EPOCHS = [999999]                      # Number of epochs
@@ -203,7 +203,7 @@ if __name__ == "__main__" :
         LSTM Training
         '''
         # Training parameters
-        BATCH_SIZE = 4 # Batch size
+        BATCH_SIZE = 30 # Batch size
         LOSS_FUNCTION = torch.nn.CrossEntropyLoss() # Loss function
         OPTIMIZER_TYPE = "Adam"                      # Type of optimizer
         EPOCHS = [999999]                      # Number of epochs
@@ -330,7 +330,7 @@ if __name__ == "__main__" :
     CNN Training
     '''
     # Training parameters
-    BATCH_SIZE = 5                                  # Batch size
+    BATCH_SIZE = 30                                  # Batch size
     LOSS_FUNCTION = torch.nn.CrossEntropyLoss()     # Loss function
     OPTIMIZER_TYPE = "SGD"                          # Type of optimizer
     EPOCHS = [999999]                               # Number of epochs

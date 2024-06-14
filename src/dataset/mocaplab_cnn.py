@@ -45,18 +45,24 @@ class MocaplabDatasetCNN(Dataset):
             for line in csv_reader:
                 if n==0:
                     header = line
-                    if not self.header:
-                        self.header = list(set(header))
-                if n>=2 :
+                    self.header = list(set(header))
+                    id = {}
+                    for i, bone in enumerate(header):
+                        if bone not in id.keys() and bone in self.bones_to_keep:
+                            id[bone] = [i]
+                        elif bone in id.keys() and bone in self.bones_to_keep:
+                            id[bone].extend([i])
+                if n>=2:
                     values = []
-                    for i in range(len(header)):
-                        if self.bones_to_keep and header[i] in self.bones_to_keep:
-                            values.append(float(line[i]))
-                        else:
-                            values.append(float(line[i]))
-                    data.append(values)
+                    if id:
+                        for bone in id.keys():
+                            for i in id[bone]:
+                                values.append(float(line[i]))
+                        data.append(values)
                 n+=1
         data = np.stack(data)
+        if data.shape[1]!=len(self.bones_to_keep)*3:
+            raise ValueError
         return data
 
     def __len__(self):
