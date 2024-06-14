@@ -20,7 +20,7 @@ class MocaplabDatasetCNN(Dataset):
         self.bones_to_keep = bones_to_keep
         self.class_dict = None
         self.max_length = 0
-
+        self.header = None
         self.x = []
         self.y = []
         self.labels = None
@@ -45,6 +45,8 @@ class MocaplabDatasetCNN(Dataset):
             for line in csv_reader:
                 if n==0:
                     header = line
+                    if not self.header:
+                        self.header = list(set(header))
                 if n>=2 :
                     values = []
                     for i in range(len(header)):
@@ -69,7 +71,7 @@ class MocaplabDatasetCNN(Dataset):
         labels = pd.read_csv(os.path.join(self.path,
                                           "Annotation_gloses.csv"), sep="\t")
         labels.dropna(inplace=True)
-        self.labels = {n: c for n, c in zip(labels["Nom.csv"], labels["Mono/Bi"])}
+        self.labels = {n: c for n, c in zip(labels["Nom.csv"], labels["Mono/Bi"]) if os.path.exists(os.path.join(self.path,f"{n}.csv"))}
         
         # Retrieve files
         files = os.listdir(self.path)

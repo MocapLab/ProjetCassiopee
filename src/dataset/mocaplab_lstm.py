@@ -19,7 +19,7 @@ class MocaplabDatasetLSTM(Dataset):
         self.class_dict = None
         self.max_length = 0
         self.bones_to_keep = bones_to_keep
-
+        self.header = None
         self.x = []
         self.y = []
         self.labels = None
@@ -27,7 +27,8 @@ class MocaplabDatasetLSTM(Dataset):
 
         self._create_labels_dict()
         self._load_data()
-
+        print(f"removed {self.removed}")
+        print(f"number of 3D data : {len(self.header)}")
         if nb_samples is not None:
             # Shuffle data in order to have multiple classes
             x_and_y = list(zip(self.x, self.y))
@@ -44,7 +45,9 @@ class MocaplabDatasetLSTM(Dataset):
             for line in csv_reader:
                 if n==0:
                     header = line
-                if n>=2 :
+                    if not self.header:
+                        self.header = list(set(header))
+                if n>=2:
                     values = []
                     for i in range(len(header)):
                         if self.bones_to_keep and header[i] in self.bones_to_keep:
@@ -68,7 +71,7 @@ class MocaplabDatasetLSTM(Dataset):
         labels = pd.read_csv(os.path.join(self.path,
                                           "Annotation_gloses.csv"), sep="\t")
         labels.dropna(inplace=True)
-        self.labels = {n: c for n, c in zip(labels["Nom.csv"], labels["Mono/Bi"])}
+        self.labels = {n: c for n, c in zip(labels["Nom.csv"], labels["Mono/Bi"]) if os.path.exists(os.path.join(self.path,f"{n}.csv"))}
         
         # Retrieve files
         files = os.listdir(self.path)

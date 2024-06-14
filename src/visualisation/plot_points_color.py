@@ -17,7 +17,7 @@ from src.setup import setup_python, setup_pytorch
 from src.models.mocaplab import TestCNN
 
 
-def create_images(i, data, label, prediction, nom, heatmap):
+def create_images(i, data, label, prediction, nom, heatmap, size):
 
     if not os.path.exists(f"{src_folder}/train_results/mocaplab/animation/{nom}"):
         os.mkdir(f"{src_folder}/train_results/mocaplab/animation/{nom}")
@@ -35,7 +35,8 @@ def create_images(i, data, label, prediction, nom, heatmap):
 
     data = data.numpy()
     data = im.fromarray(data[0,...])
-    data = data.resize((237, 100))
+
+    data = data.resize((size[1], size[0]))
 
     data = np.array(data).T
     print(data.shape)
@@ -45,23 +46,23 @@ def create_images(i, data, label, prediction, nom, heatmap):
     z_data = data[:, 2::3]
 
     # Initialize lines
-    line_points_indices = [
-        (0, 1), (0, 2), (3, 4), (4, 5), (5, 6), (5, 7), (6, 8), (7, 9), (8, 9), (1, 70),     # Chest and head
-        (3, 10), (2, 10), (10, 11), (11, 12), (12, 13), (13, 14), (14, 15),                  # Right arm (without hand)
-        (2, 40), (3, 40), (40, 41), (41, 42), (42, 43), (43, 44), (44, 45),                  # Left arm (without hand)
-        (70, 71), (71, 72), (72, 73), (73, 74),                                              # Right leg
-        (70, 75), (75, 76), (76, 77), (77, 78),                                              # Left leg
-        (15, 16), (16, 17), (17, 18), (18, 19), (19, 20),                                    # Right hand, pinky
-        (15, 21), (21, 22), (22, 23), (23, 24), (24, 25),                                    # Right hand, ring
-        (15, 26), (26, 27), (27, 28), (28, 29), (29, 30),                                    # Right hand, mid
-        (15, 31), (31, 32), (32, 33), (33, 34), (34, 35),                                    # Right hand, index
-        (15, 36), (36, 37), (37, 38), (38, 39),                                              # Right hand, thumb
-        (45, 46), (46, 47), (47, 48), (48, 49), (49, 50),                                    # Left hand, pinky
-        (45, 51), (51, 52), (52, 53), (53, 54), (54, 55),                                    # Left hand, ring
-        (45, 56), (56, 57), (57, 58), (58, 59), (59, 60),                                    # Left hand, mid
-        (45, 61), (61, 62), (62, 63), (63, 64), (64, 65),                                    # Left hand, index
-        (45, 66), (66, 67), (67, 68), (68, 69)                                               # Left hand, thumb                
-    ]
+    # line_points_indices = [
+    #     (0, 1), (0, 2), (3, 4), (4, 5), (5, 6), (5, 7), (6, 8), (7, 9), (8, 9), (1, 70),     # Chest and head
+    #     (3, 10), (2, 10), (10, 11), (11, 12), (12, 13), (13, 14), (14, 15),                  # Right arm (without hand)
+    #     (2, 40), (3, 40), (40, 41), (41, 42), (42, 43), (43, 44), (44, 45),                  # Left arm (without hand)
+    #     (70, 71), (71, 72), (72, 73), (73, 74),                                              # Right leg
+    #     (70, 75), (75, 76), (76, 77), (77, 78),                                              # Left leg
+    #     (15, 16), (16, 17), (17, 18), (18, 19), (19, 20),                                    # Right hand, pinky
+    #     (15, 21), (21, 22), (22, 23), (23, 24), (24, 25),                                    # Right hand, ring
+    #     (15, 26), (26, 27), (27, 28), (28, 29), (29, 30),                                    # Right hand, mid
+    #     (15, 31), (31, 32), (32, 33), (33, 34), (34, 35),                                    # Right hand, index
+    #     (15, 36), (36, 37), (37, 38), (38, 39),                                              # Right hand, thumb
+    #     (45, 46), (46, 47), (47, 48), (48, 49), (49, 50),                                    # Left hand, pinky
+    #     (45, 51), (51, 52), (52, 53), (53, 54), (54, 55),                                    # Left hand, ring
+    #     (45, 56), (56, 57), (57, 58), (58, 59), (59, 60),                                    # Left hand, mid
+    #     (45, 61), (61, 62), (62, 63), (63, 64), (64, 65),                                    # Left hand, index
+    #     (45, 66), (66, 67), (67, 68), (68, 69)                                               # Left hand, thumb                
+    # ]
 
     for frame in range(len(data)):
 
@@ -82,8 +83,8 @@ def create_images(i, data, label, prediction, nom, heatmap):
         # Initialize an empty scatter plot (to be updated in the animation)
         scatter = ax.scatter([], [], [])
 
-        num_lines = len(line_points_indices)
-        lines = [ax.plot([], [], [], "-", color="red")[0] for _ in range(num_lines)]
+        # num_lines = len(line_points_indices)
+        # lines = [ax.plot([], [], [], "-", color="red")[0] for _ in range(num_lines)]
 
 
         frame_coordinates = (x_data[frame], z_data[frame], y_data[frame])
@@ -95,10 +96,10 @@ def create_images(i, data, label, prediction, nom, heatmap):
         ax.set_title(f"Data {i}, Label : {label}, Prediction : {prediction} with model {model} \nFrame: {frame}")
 
         # Adding lines between the joints
-        for line, (start, end) in zip(lines, line_points_indices):
-            line.set_data_3d([x_data[frame][start], x_data[frame][end]],
-                             [z_data[frame][start], z_data[frame][end]],
-                             [y_data[frame][start], y_data[frame][end]])
+        # for line, (start, end) in zip(lines, line_points_indices):
+        #     line.set_data_3d([x_data[frame][start], x_data[frame][end]],
+        #                      [z_data[frame][start], z_data[frame][end]],
+        #                      [y_data[frame][start], y_data[frame][end]])
 
         # Update the colors of the points based on the joints_color list
         colors = ["limegreen" if idx in joints_color[frame] else "blue" for idx in range(len(x_data[frame]))]
@@ -112,7 +113,7 @@ def create_images(i, data, label, prediction, nom, heatmap):
         fig.savefig(f"{src_folder}/train_results/mocaplab/animation/{nom}/{frame}.png")
         plt.close()
 
-def create_animation(i, data, label, prediction, nom, heatmap):
+def create_animation(i, data, label, prediction, nom, heatmap, size):
 
     print(f"i={i}")
     print(f"data={data}")
@@ -240,16 +241,20 @@ def create_animation(i, data, label, prediction, nom, heatmap):
     model = "CNN"
     data = data.numpy()
     data = im.fromarray(data[0,...])
-    data = data.resize((237, 100))
+    data = data.resize((size[1], size[0]))
 
-    data = np.array(data)
+    data = np.array(data).T
     print(data.shape)
 
     x_data = data[:, 0::3]
     y_data = data[:, 1::3]
     z_data = data[:, 2::3]
 
+    print(x_data.shape)
+    print(y_data.shape)
+    print(z_data.shape)
     fig = plt.figure()
+    
 
     ax = fig.add_subplot(111, projection="3d")
     ax.set_xlim(min([min(x_data[i]) for i in range(len(x_data))]),
@@ -267,26 +272,26 @@ def create_animation(i, data, label, prediction, nom, heatmap):
     scatter = ax.scatter([], [], [])
 
     # Initialize lines
-    line_points_indices = [
-        (0, 1), (0, 2), (3, 4), (4, 5), (5, 6), (5, 7), (6, 8), (7, 9), (8, 9), (1, 70),     # Chest and head
-        (3, 10), (2, 10), (10, 11), (11, 12), (12, 13), (13, 14), (14, 15),                  # Right arm (without hand)
-        (2, 40), (3, 40), (40, 41), (41, 42), (42, 43), (43, 44), (44, 45),                  # Left arm (without hand)
-        (70, 71), (71, 72), (72, 73), (73, 74),                                              # Right leg
-        (70, 75), (75, 76), (76, 77), (77, 78),                                              # Left leg
-        (15, 16), (16, 17), (17, 18), (18, 19), (19, 20),                                    # Right hand, pinky
-        (15, 21), (21, 22), (22, 23), (23, 24), (24, 25),                                    # Right hand, ring
-        (15, 26), (26, 27), (27, 28), (28, 29), (29, 30),                                    # Right hand, mid
-        (15, 31), (31, 32), (32, 33), (33, 34), (34, 35),                                    # Right hand, index
-        (15, 36), (36, 37), (37, 38), (38, 39),                                              # Right hand, thumb
-        (45, 46), (46, 47), (47, 48), (48, 49), (49, 50),                                    # Left hand, pinky
-        (45, 51), (51, 52), (52, 53), (53, 54), (54, 55),                                    # Left hand, ring
-        (45, 56), (56, 57), (57, 58), (58, 59), (59, 60),                                    # Left hand, mid
-        (45, 61), (61, 62), (62, 63), (63, 64), (64, 65),                                    # Left hand, index
-        (45, 66), (66, 67), (67, 68), (68, 69)                                               # Left hand, thumb                
-    ]
+    # line_points_indices = [
+    #     (0, 1), (0, 2), (3, 4), (4, 5), (5, 6), (5, 7), (6, 8), (7, 9), (8, 9), (1, 70),     # Chest and head
+    #     (3, 10), (2, 10), (10, 11), (11, 12), (12, 13), (13, 14), (14, 15),                  # Right arm (without hand)
+    #     (2, 40), (3, 40), (40, 41), (41, 42), (42, 43), (43, 44), (44, 45),                  # Left arm (without hand)
+    #     (70, 71), (71, 72), (72, 73), (73, 74),                                              # Right leg
+    #     (70, 75), (75, 76), (76, 77), (77, 78),                                              # Left leg
+    #     (15, 16), (16, 17), (17, 18), (18, 19), (19, 20),                                    # Right hand, pinky
+    #     (15, 21), (21, 22), (22, 23), (23, 24), (24, 25),                                    # Right hand, ring
+    #     (15, 26), (26, 27), (27, 28), (28, 29), (29, 30),                                    # Right hand, mid
+    #     (15, 31), (31, 32), (32, 33), (33, 34), (34, 35),                                    # Right hand, index
+    #     (15, 36), (36, 37), (37, 38), (38, 39),                                              # Right hand, thumb
+    #     (45, 46), (46, 47), (47, 48), (48, 49), (49, 50),                                    # Left hand, pinky
+    #     (45, 51), (51, 52), (52, 53), (53, 54), (54, 55),                                    # Left hand, ring
+    #     (45, 56), (56, 57), (57, 58), (58, 59), (59, 60),                                    # Left hand, mid
+    #     (45, 61), (61, 62), (62, 63), (63, 64), (64, 65),                                    # Left hand, index
+    #     (45, 66), (66, 67), (67, 68), (68, 69)                                               # Left hand, thumb                
+    # ]
 
-    num_lines = len(line_points_indices)
-    lines = [ax.plot([], [], [], "-", color="red")[0] for _ in range(num_lines)]
+    # num_lines = len(line_points_indices)
+    # lines = [ax.plot([], [], [], "-", color="red")[0] for _ in range(num_lines)]
 
     # Function to update the scatter plot
     def update(frame):    
@@ -301,10 +306,10 @@ def create_animation(i, data, label, prediction, nom, heatmap):
         ax.set_title(f"Data {nom[3:-6]}, Number {i}, Label : {label}, Prediction : {prediction} with model {model} \nFrame: {frame}")
 
         # Adding lines between the joints
-        for line, (start, end) in zip(lines, line_points_indices):
-            line.set_data_3d([x_data[frame][start], x_data[frame][end]],
-                             [z_data[frame][start], z_data[frame][end]],
-                             [y_data[frame][start], y_data[frame][end]])
+        # for line, (start, end) in zip(lines, line_points_indices):
+        #     line.set_data_3d([x_data[frame][start], x_data[frame][end]],
+        #                      [z_data[frame][start], z_data[frame][end]],
+        #                      [y_data[frame][start], y_data[frame][end]])
 
         # Update the colors of the points based on the joints_color list
         colors = ["limegreen" if idx in joints_color[frame] else "blue" for idx in range(len(x_data[frame]))]
@@ -313,7 +318,7 @@ def create_animation(i, data, label, prediction, nom, heatmap):
         scatter.set_facecolors(colors)
         # scatter.set_sizes(sizes)
 
-        return scatter, *lines
+        return scatter
 
     # Create the animation
     animation = FuncAnimation(fig, update, frames=len(data), blit=True)
@@ -339,10 +344,11 @@ def create_all_animations(results_dir="train_results/mocaplab/supervised"):
     #                             padding=True, 
     #                             train_test_ratio=8,
     #                             validation_percentage=0.01)
+    bones_to_keep = "abdomenUpper_T_glob;abdomenUpper_T_glob;abdomenUpper_T_glob;chestLower_T_glob;chestLower_T_glob;chestLower_T_glob;chestUpper_T_glob;chestUpper_T_glob;chestUpper_T_glob;neckLower_T_glob;neckLower_T_glob;neckLower_T_glob;rCollar_T_glob;rCollar_T_glob;rCollar_T_glob;rShldrBend_T_glob;rShldrBend_T_glob;rShldrBend_T_glob;rShldrTwist_T_glob;rShldrTwist_T_glob;rShldrTwist_T_glob;rForearmBend_T_glob;rForearmBend_T_glob;rForearmBend_T_glob;rForearmTwist_T_glob;rForearmTwist_T_glob;rForearmTwist_T_glob;rHand_T_glob;rHand_T_glob;rHand_T_glob;rCarpal4_T_glob;rCarpal4_T_glob;rCarpal4_T_glob;rPinky1_T_glob;rPinky1_T_glob;rPinky1_T_glob;rPinky2_T_glob;rPinky2_T_glob;rPinky2_T_glob;rPinky3_T_glob;rPinky3_T_glob;rPinky3_T_glob;rPinky3_end_T_glob;rPinky3_end_T_glob;rPinky3_end_T_glob;rCarpal3_T_glob;rCarpal3_T_glob;rCarpal3_T_glob;rRing1_T_glob;rRing1_T_glob;rRing1_T_glob;rRing2_T_glob;rRing2_T_glob;rRing2_T_glob;rRing3_T_glob;rRing3_T_glob;rRing3_T_glob;rRing3_end_T_glob;rRing3_end_T_glob;rRing3_end_T_glob;rCarpal2_T_glob;rCarpal2_T_glob;rCarpal2_T_glob;rMid1_T_glob;rMid1_T_glob;rMid1_T_glob;rMid2_T_glob;rMid2_T_glob;rMid2_T_glob;rMid3_T_glob;rMid3_T_glob;rMid3_T_glob;rMid3_end_T_glob;rMid3_end_T_glob;rMid3_end_T_glob;rCarpal1_T_glob;rCarpal1_T_glob;rCarpal1_T_glob;rIndex1_T_glob;rIndex1_T_glob;rIndex1_T_glob;rIndex2_T_glob;rIndex2_T_glob;rIndex2_T_glob;rIndex3_T_glob;rIndex3_T_glob;rIndex3_T_glob;rIndex3_end_T_glob;rIndex3_end_T_glob;rIndex3_end_T_glob;rThumb1_T_glob;rThumb1_T_glob;rThumb1_T_glob;rThumb2_T_glob;rThumb2_T_glob;rThumb2_T_glob;rThumb3_T_glob;rThumb3_T_glob;rThumb3_T_glob;rThumb3_end_T_glob;rThumb3_end_T_glob;rThumb3_end_T_glob;lCollar_T_glob;lCollar_T_glob;lCollar_T_glob;lShldrBend_T_glob;lShldrBend_T_glob;lShldrBend_T_glob;lShldrTwist_T_glob;lShldrTwist_T_glob;lShldrTwist_T_glob;lForearmBend_T_glob;lForearmBend_T_glob;lForearmBend_T_glob;lForearmTwist_T_glob;lForearmTwist_T_glob;lForearmTwist_T_glob;lHand_T_glob;lHand_T_glob;lHand_T_glob;lCarpal4_T_glob;lCarpal4_T_glob;lCarpal4_T_glob;lPinky1_T_glob;lPinky1_T_glob;lPinky1_T_glob;lPinky2_T_glob;lPinky2_T_glob;lPinky2_T_glob;lPinky3_T_glob;lPinky3_T_glob;lPinky3_T_glob;lPinky3_end_T_glob;lPinky3_end_T_glob;lPinky3_end_T_glob;lCarpal3_T_glob;lCarpal3_T_glob;lCarpal3_T_glob;lRing1_T_glob;lRing1_T_glob;lRing1_T_glob;lRing2_T_glob;lRing2_T_glob;lRing2_T_glob;lRing3_T_glob;lRing3_T_glob;lRing3_T_glob;lRing3_end_T_glob;lRing3_end_T_glob;lRing3_end_T_glob;lCarpal2_T_glob;lCarpal2_T_glob;lCarpal2_T_glob;lMid1_T_glob;lMid1_T_glob;lMid1_T_glob;lMid2_T_glob;lMid2_T_glob;lMid2_T_glob;lMid3_T_glob;lMid3_T_glob;lMid3_T_glob;lMid3_end_T_glob;lMid3_end_T_glob;lMid3_end_T_glob;lCarpal1_T_glob;lCarpal1_T_glob;lCarpal1_T_glob;lIndex1_T_glob;lIndex1_T_glob;lIndex1_T_glob;lIndex2_T_glob;lIndex2_T_glob;lIndex2_T_glob;lIndex3_T_glob;lIndex3_T_glob;lIndex3_T_glob;lIndex3_end_T_glob;lIndex3_end_T_glob;lIndex3_end_T_glob;lThumb1_T_glob;lThumb1_T_glob;lThumb1_T_glob;lThumb2_T_glob;lThumb2_T_glob;lThumb2_T_glob;lThumb3_T_glob;lThumb3_T_glob;lThumb3_T_glob;lThumb3_end_T_glob;lThumb3_end_T_glob;lThumb3_end_T_glob".split(';')
     dataset_cnn = MocaplabDatasetCNN(path=(f"{src_folder}/data/mocaplab/Cassiopée_Allbones"),
                                 padding=True, 
                                 train_test_ratio=8,
-                                validation_percentage=0.01)
+                                validation_percentage=0.01, bones_to_keep=bones_to_keep)
     print("#### Data Loader ####")
     # data_loader_fc = DataLoader(dataset_fc,
     #                          batch_size=1,
@@ -367,7 +373,7 @@ def create_all_animations(results_dir="train_results/mocaplab/supervised"):
     cnn = TestCNN()
 
     # Load the trained weights cnn old model
-    cnn.load_state_dict(torch.load((f"{src_folder}/src/models/mocaplab/all/saved_models/CNN/CNN_20240612_123241.ckpt"),
+    cnn.load_state_dict(torch.load((f"{src_folder}/src/models/mocaplab/all/saved_models/CNN/CNN_20240614_123239.ckpt"),
                                     map_location=torch.device("cpu")))
 
     # Load the trained weights cnn new model
@@ -386,8 +392,10 @@ def create_all_animations(results_dir="train_results/mocaplab/supervised"):
         # get the most likely prediction of the model
         pred = cnn(img)
 
-        if np.array_equal(pred[0].detach().numpy().round(decimals=0), label.numpy().round(decimals=0)):
+        if int(pred[0][1].detach().numpy().round(decimals=0)) != label[0].numpy().round(decimals=0):
             print("error")
+            print(pred[0][1].detach().numpy().round(decimals=0))
+            print(label[0].numpy().round(decimals=0))
         # get the gradient of the output with respect to the parameters of the model
         pred[:,0].backward()
 
@@ -416,8 +424,8 @@ def create_all_animations(results_dir="train_results/mocaplab/supervised"):
 
         for i in range(0, dataset_cnn.max_length):
             max_for_one_joint = []
-            for j in range(0, dataset_cnn[0][0].shape[1]/3): #237/3
-                max = torch.max(heatmap_resized[i][j*3:j*3+2])
+            for j in range(0, int(dataset_cnn[0][0].shape[1]/3)): #237/3
+                max = torch.max(heatmap_resized[i][j*3:j*3+3])
                 max_for_one_joint.append(max)
             _, max_activations_indices = torch.topk(torch.as_tensor(max_for_one_joint), k=10)
             ten_max_joints_all_frames.append(max_activations_indices)
@@ -461,8 +469,8 @@ def create_all_animations(results_dir="train_results/mocaplab/supervised"):
         
         nom = f"cnn_{i}_{name[0]}_{label}_{predicted}"
         
-        create_images(i, data, label, predicted, nom, heatmap_data[i])
-        create_animation(i, data, label, predicted, nom, heatmap_data[i])
+        create_images(i, data, label, predicted, nom, heatmap_data[i], size=[dataset_cnn.max_length, dataset_cnn[0][0].shape[1]])
+        create_animation(i, data, label, predicted, nom, heatmap_data[i], size=[dataset_cnn.max_length, dataset_cnn[0][0].shape[1]])
 
     print("#### DONE ####")
 

@@ -20,7 +20,7 @@ class MocaplabDatasetFC(Dataset):
         self.bones_to_keep = bones_to_keep
         self.class_dict = None
         self.max_length = 0
-
+        self.header = None
         self.x = []
         self.y = []
         self.labels = None
@@ -28,7 +28,8 @@ class MocaplabDatasetFC(Dataset):
 
         self._create_labels_dict()
         self._load_data()
-
+        print(f"removed {self.removed}")
+        print(f"number of 3D data : {len(self.header)}")
         if nb_samples is not None:
             # Shuffle data in order to have multiple classes
             x_and_y = list(zip(self.x, self.y))
@@ -45,16 +46,23 @@ class MocaplabDatasetFC(Dataset):
             for line in csv_reader:
                 if n==0:
                     header = line
-                if n>=2 :
-                    values = []
-                    for i in range(len(header)):
-                        if self.bones_to_keep and header[i] in self.bones_to_keep:
-                            values.append(float(line[i]))
+                    self.header = list(set(header))
+                    id = {}
+                    for i, bone in enumerate(self.header):
+                        if bone not in id.keys():
+                            id[bone] = [i]
                         else:
+                            id[bone].extend(i)
+                if n>=2:
+                    values = []
+                    for bone in id.keys():
+                        for i in id[bone]:
                             values.append(float(line[i]))
                     data.append(values)
                 n+=1
         data = np.stack(data)
+        if data.shape[1]*3>len(self.bones_to_keep):
+            raise ValueError
         return data
 
     def __len__(self):
@@ -69,7 +77,7 @@ class MocaplabDatasetFC(Dataset):
         labels = pd.read_csv(os.path.join(self.path, "Annotation_gloses.csv"),
                              sep="\t")
         labels.dropna(inplace=True)
-        self.labels = {n: c for n, c in zip(labels["Nom.csv"], labels["Mono/Bi"])}
+        self.labels = {n: c for n, c in zip(labels["Nom.csv"], labels["Mono/Bi"]) if os.path.exists(os.path.join(self.path,f"{n}.csv"))}
         
         # Retrieve files
         files = os.listdir(self.path)
