@@ -1,9 +1,7 @@
 import os
-import sys
 import random
 import pandas as pd
 import csv
-import torch
 from torch.utils.data import Dataset
 import numpy as np
 
@@ -12,15 +10,15 @@ class MocaplabDatasetLSTM(Dataset):
     PyTorch dataset for the Mocaplab dataset.
     """
 
-    def __init__(self, path, padding=True, train_test_ratio=8, validation_percentage=0.01, nb_samples=None):
+    def __init__(self, path, padding=True, train_test_ratio=8, validation_percentage=0.01, nb_samples=None, bones_to_keep=None):
         super().__init__()
         self.path = path
         self.padding = padding
         self.train_test_ratio = train_test_ratio
         self.validation_percentage = validation_percentage
-
         self.class_dict = None
         self.max_length = 0
+        self.bones_to_keep = bones_to_keep
 
         self.x = []
         self.y = []
@@ -43,11 +41,16 @@ class MocaplabDatasetLSTM(Dataset):
         with open(csv_file, 'r') as file:
             csv_reader = csv.reader(file, delimiter=';')
             n=0
-            for line in csv_reader :
+            for line in csv_reader:
+                if n==0:
+                    header = line
                 if n>=2 :
-                    values = line[2:]
-                    for i in range(len(values)) :
-                        values[i] = float(values[i])
+                    values = []
+                    for i in range(len(header)):
+                        if self.bones_to_keep and header[i] in self.bones_to_keep:
+                            values.append(float(line[i]))
+                        else:
+                            values.append(float(line[i]))
                     data.append(values)
                 n+=1
         data = np.stack(data)
@@ -92,7 +95,7 @@ class MocaplabDatasetLSTM(Dataset):
         if self.padding:
             data = data.tolist()
             for _ in range(self.max_length-len(data)) :
-                data.append([0.0 for _ in range(237)])
+                data.append([0.0 for _ in range(len(data[0]))])
             data = np.stack(data)
 
         return data, label, self.x[idx]

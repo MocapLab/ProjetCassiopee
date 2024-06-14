@@ -58,17 +58,17 @@ if __name__ == "__main__" :
     PATIENCE = 10        # Early stopping patience
     MIN_DELTA = 0.001     # Early stopping minimum delta
 
-    DEBUG = True # Debug flag
+    DEBUG = False # Debug flag
 
     generator = torch.Generator()
     generator.manual_seed(0)
     
     # Datasets
     print("#### FC Datasets ####")
-
+    bones_to_keep = "abdomenUpper_T_glob;abdomenUpper_T_glob;abdomenUpper_T_glob;chestLower_T_glob;chestLower_T_glob;chestLower_T_glob;chestUpper_T_glob;chestUpper_T_glob;chestUpper_T_glob;neckLower_T_glob;neckLower_T_glob;neckLower_T_glob;rCollar_T_glob;rCollar_T_glob;rCollar_T_glob;rShldrBend_T_glob;rShldrBend_T_glob;rShldrBend_T_glob;rShldrTwist_T_glob;rShldrTwist_T_glob;rShldrTwist_T_glob;rForearmBend_T_glob;rForearmBend_T_glob;rForearmBend_T_glob;rForearmTwist_T_glob;rForearmTwist_T_glob;rForearmTwist_T_glob;rHand_T_glob;rHand_T_glob;rHand_T_glob;rCarpal4_T_glob;rCarpal4_T_glob;rCarpal4_T_glob;rPinky1_T_glob;rPinky1_T_glob;rPinky1_T_glob;rPinky2_T_glob;rPinky2_T_glob;rPinky2_T_glob;rPinky3_T_glob;rPinky3_T_glob;rPinky3_T_glob;rPinky3_end_T_glob;rPinky3_end_T_glob;rPinky3_end_T_glob;rCarpal3_T_glob;rCarpal3_T_glob;rCarpal3_T_glob;rRing1_T_glob;rRing1_T_glob;rRing1_T_glob;rRing2_T_glob;rRing2_T_glob;rRing2_T_glob;rRing3_T_glob;rRing3_T_glob;rRing3_T_glob;rRing3_end_T_glob;rRing3_end_T_glob;rRing3_end_T_glob;rCarpal2_T_glob;rCarpal2_T_glob;rCarpal2_T_glob;rMid1_T_glob;rMid1_T_glob;rMid1_T_glob;rMid2_T_glob;rMid2_T_glob;rMid2_T_glob;rMid3_T_glob;rMid3_T_glob;rMid3_T_glob;rMid3_end_T_glob;rMid3_end_T_glob;rMid3_end_T_glob;rCarpal1_T_glob;rCarpal1_T_glob;rCarpal1_T_glob;rIndex1_T_glob;rIndex1_T_glob;rIndex1_T_glob;rIndex2_T_glob;rIndex2_T_glob;rIndex2_T_glob;rIndex3_T_glob;rIndex3_T_glob;rIndex3_T_glob;rIndex3_end_T_glob;rIndex3_end_T_glob;rIndex3_end_T_glob;rThumb1_T_glob;rThumb1_T_glob;rThumb1_T_glob;rThumb2_T_glob;rThumb2_T_glob;rThumb2_T_glob;rThumb3_T_glob;rThumb3_T_glob;rThumb3_T_glob;rThumb3_end_T_glob;rThumb3_end_T_glob;rThumb3_end_T_glob;lCollar_T_glob;lCollar_T_glob;lCollar_T_glob;lShldrBend_T_glob;lShldrBend_T_glob;lShldrBend_T_glob;lShldrTwist_T_glob;lShldrTwist_T_glob;lShldrTwist_T_glob;lForearmBend_T_glob;lForearmBend_T_glob;lForearmBend_T_glob;lForearmTwist_T_glob;lForearmTwist_T_glob;lForearmTwist_T_glob;lHand_T_glob;lHand_T_glob;lHand_T_glob;lCarpal4_T_glob;lCarpal4_T_glob;lCarpal4_T_glob;lPinky1_T_glob;lPinky1_T_glob;lPinky1_T_glob;lPinky2_T_glob;lPinky2_T_glob;lPinky2_T_glob;lPinky3_T_glob;lPinky3_T_glob;lPinky3_T_glob;lPinky3_end_T_glob;lPinky3_end_T_glob;lPinky3_end_T_glob;lCarpal3_T_glob;lCarpal3_T_glob;lCarpal3_T_glob;lRing1_T_glob;lRing1_T_glob;lRing1_T_glob;lRing2_T_glob;lRing2_T_glob;lRing2_T_glob;lRing3_T_glob;lRing3_T_glob;lRing3_T_glob;lRing3_end_T_glob;lRing3_end_T_glob;lRing3_end_T_glob;lCarpal2_T_glob;lCarpal2_T_glob;lCarpal2_T_glob;lMid1_T_glob;lMid1_T_glob;lMid1_T_glob;lMid2_T_glob;lMid2_T_glob;lMid2_T_glob;lMid3_T_glob;lMid3_T_glob;lMid3_T_glob;lMid3_end_T_glob;lMid3_end_T_glob;lMid3_end_T_glob;lCarpal1_T_glob;lCarpal1_T_glob;lCarpal1_T_glob;lIndex1_T_glob;lIndex1_T_glob;lIndex1_T_glob;lIndex2_T_glob;lIndex2_T_glob;lIndex2_T_glob;lIndex3_T_glob;lIndex3_T_glob;lIndex3_T_glob;lIndex3_end_T_glob;lIndex3_end_T_glob;lIndex3_end_T_glob;lThumb1_T_glob;lThumb1_T_glob;lThumb1_T_glob;lThumb2_T_glob;lThumb2_T_glob;lThumb2_T_glob;lThumb3_T_glob;lThumb3_T_glob;lThumb3_T_glob;lThumb3_end_T_glob;lThumb3_end_T_glob;lThumb3_end_T_glob".split(';')
     data_path = '%s/data/mocaplab/Cassiopée_Allbones'%src_folder
-    dataset = MocaplabDatasetFC(data_path, padding=True)
-    
+    dataset = MocaplabDatasetFC(data_path, padding=True, bones_to_keep=bones_to_keep)
+    print(dataset[0][0].shape[1])
     # Split dataset
     n = len(dataset)
 
@@ -107,10 +107,9 @@ if __name__ == "__main__" :
                                         batch_size=BATCH_SIZE,
                                         shuffle=False)
     
-    
     # Create neural network
     print("#### FC Model ####")
-    model = MocaplabFC(dataset.max_length*237).to(DEVICE)
+    model = MocaplabFC(dataset.max_length*dataset[0][0].shape[1]).to(DEVICE)
 
     """state_dict = torch.load("self_supervised_learning/dev/ProjetCassiopee/data/mocaplab/Cassiopée_Allbones")
     
@@ -219,10 +218,11 @@ if __name__ == "__main__" :
         
         # Datasets
         print("#### LSTM Datasets ####")
-
         dataset = MocaplabDatasetLSTM(path=data_path,
-                                      padding = True)
-        
+                                      padding = True,
+                                      bones_to_keep=bones_to_keep)
+        print('')
+        print(dataset[0][0].shape)
         # Split dataset
         n = len(dataset)
 
@@ -263,7 +263,7 @@ if __name__ == "__main__" :
         
         # Create neural network
         print("#### LSTM Model ####")
-        model = LSTM(input_size=237, hidden_size=48, num_layers=4, output_size=2).to(DEVICE)
+        model = LSTM(input_size=dataset[0][0].shape[1], hidden_size=48, num_layers=4, output_size=2).to(DEVICE)
 
         # Save training time start
         start_timestamp = datetime.now()
@@ -339,7 +339,7 @@ if __name__ == "__main__" :
     PATIENCE = 10                               # Early stopping patience
     MIN_DELTA = 0.01                              # Early stopping minimum delta
 
-    DEBUG = True # Debug flag
+    DEBUG = False # Debug flag
 
     generator = torch.Generator()
     generator.manual_seed(0)
@@ -347,7 +347,7 @@ if __name__ == "__main__" :
     # Datasets
     print("#### CNN Datasets ####")
 
-    dataset = MocaplabDatasetCNN(data_path, padding=True)
+    dataset = MocaplabDatasetCNN(data_path, padding=True, bones_to_keep=bones_to_keep)
     
     # Split dataset
     n = len(dataset)

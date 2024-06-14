@@ -4,7 +4,6 @@ import pandas as pd
 import csv
 from torch.utils.data import Dataset
 import numpy as np
-from PIL import Image as im
 
 class MocaplabDatasetRNN(Dataset):
     """
@@ -92,7 +91,7 @@ class MocaplabDatasetRNN(Dataset):
         if self.padding:
             data = data.tolist()
             for _ in range(self.max_length-len(data)) :
-                data.append([0.0 for _ in range(237)])
+                data.append([0.0 for _ in range(len(data[0]))])
             data = np.stack(data)
         if self.return_filename :
             return data, label, self.x[idx]

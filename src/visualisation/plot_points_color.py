@@ -410,13 +410,13 @@ def create_all_animations(results_dir="train_results/mocaplab/supervised"):
         #For each time frame, get the coordinates of the ten maximum activation values to find the most significant joints
         #First, reshape the heatmap (64x64) to original size (100x237)
         heatmap_resized = heatmap.unsqueeze(0).unsqueeze(0)
-        heatmap_resized = F.interpolate(heatmap_resized,size=(100,237), mode='bilinear')
+        heatmap_resized = F.interpolate(heatmap_resized,size=(dataset_cnn.max_length,dataset_cnn[0][0].shape[1]), mode='bilinear')
         heatmap_resized = torch.squeeze(heatmap_resized)
         ten_max_joints_all_frames = []
 
-        for i in range(0, 100):
+        for i in range(0, dataset_cnn.max_length):
             max_for_one_joint = []
-            for j in range(0, 79): #237/3
+            for j in range(0, dataset_cnn[0][0].shape[1]/3): #237/3
                 max = torch.max(heatmap_resized[i][j*3:j*3+2])
                 max_for_one_joint.append(max)
             _, max_activations_indices = torch.topk(torch.as_tensor(max_for_one_joint), k=10)

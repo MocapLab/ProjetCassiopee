@@ -188,7 +188,7 @@ if __name__ == "__main__":
                              batch_size=1,
                              shuffle=False)
     
-    model = MocaplabFC(dataset.max_length*237).to(DEVICE)
+    model = MocaplabFC(dataset.max_length*dataset[0][0].shape[1]).to(DEVICE)
     model.load_state_dict(torch.load("self_supervised_learning/dev/ProjetCassiopee/src/models/mocaplab/all/saved_models/FC_20240514_175739.ckpt"))
     model = model.to(DEVICE)
     model = model.double()
