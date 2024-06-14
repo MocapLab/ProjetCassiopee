@@ -1,6 +1,0 @@
-numpy
-opencv-python
-imutils
-scikit-learn
-tensorflow
-screen_brightness_control

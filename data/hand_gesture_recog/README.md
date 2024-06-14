@@ -1,1 +1,0 @@
-Download [hand_gesture_recog_dataset](https://www.kaggle.com/datasets/sarjit07/hand-gesture-recog-dataset) here.
