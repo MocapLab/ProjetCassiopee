@@ -1,9 +1,7 @@
 import torch
 from sklearn.metrics import confusion_matrix
-import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
-from PIL import Image as im
 import random
 
 def create_optimizer(optimizer_type, model, learning_rate):
@@ -55,31 +53,17 @@ def train(
             # Train for one epoch
             if debug:
                 with torch.autograd.detect_anomaly():
-                    if model_type == "CNN":
-                        train_accuracy, train_loss = train_one_epoch_cnn(model, train_data_loader, loss_function, optimizer, device)
-                    if model_type == "FC":
-                        train_accuracy, train_loss = train_one_epoch_fc(model, train_data_loader, loss_function, optimizer, device)
-                    if model_type == "LSTM":
-                        train_accuracy, train_loss = train_one_epoch_lstm(model, train_data_loader, loss_function, optimizer, device)
+                    train_accuracy, train_loss = train_one_epoch(model, model_type, train_data_loader, loss_function, optimizer, device)
                     train_accuracies.append(train_accuracy)
                     train_losses.append(train_loss)
             else:
-                if model_type == "CNN":
-                    train_accuracy, train_loss = train_one_epoch_cnn(model, train_data_loader, loss_function, optimizer, device)
-                if model_type == "FC":
-                    train_accuracy, train_loss = train_one_epoch_fc(model, train_data_loader, loss_function, optimizer, device)
-                if model_type == "LSTM":
-                    train_accuracy, train_loss = train_one_epoch_lstm(model, train_data_loader, loss_function, optimizer, device)
+                train_accuracy, train_loss = train_one_epoch(model,model_type, train_data_loader, loss_function, optimizer, device)
                 train_accuracies.append(train_accuracy)
                 train_losses.append(train_loss)
 
             # Evaluate model
-            if model_type == "CNN":
-                validation_accuracy, validation_loss = evaluate_cnn(model, validation_data_loader, loss_function, device)
-            if model_type == "FC":
-                validation_accuracy, validation_loss = evaluate_fc(model, validation_data_loader, loss_function, device)
-            if model_type == "LSTM":
-                validation_accuracy, validation_loss = evaluate_lstm(model, validation_data_loader, loss_function, device)
+            validation_accuracy, validation_loss = evaluate(model,model_type, validation_data_loader, loss_function, device)
+            
             validation_accuracies.append(validation_accuracy)
             validation_losses.append(validation_loss)
 
@@ -106,9 +90,8 @@ def train(
 
     return train_accuracies, train_losses, validation_accuracies, validation_losses, run_epochs
 
-
-def train_one_epoch_fc(model, data_loader, loss_function, optimizer, device):
-
+def train_one_epoch(model, type, data_loader, loss_function, optimizer, device, weight=[0.3,0.7]):
+    
     # Enable training
     model.train(True)
 
@@ -131,120 +114,25 @@ def train_one_epoch_fc(model, data_loader, loss_function, optimizer, device):
         optimizer.zero_grad()
 
         # Make predictions for batch
-        data_flattened = data.view(data.size(0), -1)
-        output = model(data_flattened)
-
-        # Update accuracy variables
-        _, predicted = torch.max(output.data, dim=1)
-
-        total += len(label)
-        batch_correct = (predicted == label).sum().item()
-        correct += batch_correct
-
-        # Compute loss
-        loss = loss_function(output, label.cuda().long())
-
-        # Compute gradient loss
-        loss.backward()
-
-        # Update weights
-        optimizer.step()
-
-        # Update losses
-        train_loss += loss.item()
-
-        # Log
-        if i % 5 == 0:
-            # Batch loss
-            print(f"    Batch {i:8}: accuracy={batch_correct / label.size(0):.4f} | loss={loss:.4f}")
-
-    # Compute validation accuracy and loss
-    train_accuracy = correct / total
-    train_loss /= (i + 1) # Average loss over all batches of the epoch
-    
-    return train_accuracy, train_loss
-
-def evaluate_fc(model, data_loader, loss_function, device):
-
-    # Initialise accuracy variables
-    total = 0
-    correct = 0
-
-    # Initialise losses
-    validation_loss = 0.0
-
-    # Freeze the model
-    model.eval()
-    with torch.no_grad():
-
-        # Iterate over batches
-        for i, batch in enumerate(data_loader):
-            
-            # Load and prepare batch
-            data, label, name = batch
-            data = data.to(torch.float32).to(device)
-            label = label.to(torch.float32).to(device)
-
+        if type == "CNN":
             # Make predictions for batch
+            output = model(data)
+        elif type == "LSTM":
+            output = model(data)
+
+        elif type == "FC":
             data_flattened = data.view(data.size(0), -1)
             output = model(data_flattened)
 
-            # Update accuracy variables
-            _, predicted = torch.max(output.data, dim=1)
-
-            total += len(label)
-            batch_correct = (predicted == label).sum().item()
-            correct += batch_correct
-
-            # Compute loss
-            loss = loss_function(output, label.cuda().long())
-
-            # Update batch loss
-            validation_loss += loss.item()
-
-    # Compute validation accuracy and loss
-    if total != 0:
-        validation_accuracy = correct / total
-        validation_loss /= (i + 1) # Average loss over all batches of the epoch
-    else :
-        validation_accuracy = 0
-        validation_loss = 0
-
-    return validation_accuracy, validation_loss
-
-
-def train_one_epoch_lstm(model, data_loader, loss_function, optimizer, device):
-    
-    # Enable training
-    model.train(True)
-
-    # Initialise accuracy variables
-    total = 0
-    correct = 0
-
-    # Initialise loss
-    train_loss = 0.0
-
-    # Pass over all batches
-    for i, batch in enumerate(data_loader):
-
-        # Load and prepare batch
-        data, label, name = batch
-        data = data.to(torch.float32).to(device)
-        label = label.to(torch.float32).to(device)
-
-        # Zero gradient
-        optimizer.zero_grad()
-
-        # Make predictions for batch
-        output = model(data)
-
         # Update accuracy variables
         _, predicted = torch.max(output.data, dim=1)
 
         total += len(label)
-        batch_correct = (predicted == label).sum().item()
-        correct += batch_correct
+        weight_t = torch.clone(label)
+        for i_lab in range(len(label)):
+            weight_t[i_lab] = weight[int(label[i_lab].item())]
+        weighted_batch_correct = (predicted == label) * weight_t
+        correct += weighted_batch_correct.sum().item()
 
         # Compute loss
         loss = loss_function(output, label.cuda().long())
@@ -261,7 +149,7 @@ def train_one_epoch_lstm(model, data_loader, loss_function, optimizer, device):
         # Log
         if i % 5 == 0:
             # Batch loss
-            print(f"    Batch {i:8}: accuracy={batch_correct / label.size(0):.4f} | loss={loss:.4f}")
+            print(f"    Batch {i:8}: accuracy={weighted_batch_correct.sum().item() / label.size(0):.4f} | loss={loss:.4f}")
 
     # Compute validation accuracy and loss
     train_accuracy = correct / total
@@ -269,7 +157,7 @@ def train_one_epoch_lstm(model, data_loader, loss_function, optimizer, device):
     
     return train_accuracy, train_loss
 
-def evaluate_lstm(model, data_loader, loss_function, device):
+def evaluate(model, type, data_loader, loss_function, device, weight=[0.3,0.7]):
     
     # Initialise accuracy variables
     total = 0
@@ -289,120 +177,23 @@ def evaluate_lstm(model, data_loader, loss_function, device):
             data, label, name = batch
             data = data.to(torch.float32).to(device)
             label = label.to(torch.float32).to(device)
+            if type == "CNN":
+                # Make predictions for batch
+                output = model(data)
+            elif type == "LSTM":
+                output = model(data)
 
-            # Make predictions for batch
-            output = model(data)
-
+            elif type == "FC":
+                data_flattened = data.view(data.size(0), -1)
+                output = model(data_flattened)
             # Update accuracy variables
             _, predicted = torch.max(output.data, dim=1)
-
             total += len(label)
-            batch_correct = (predicted == label).sum().item()
-            correct += batch_correct
-
-            # Compute loss
-            loss = loss_function(output, label.cuda().long())
-
-            # Update batch loss
-            validation_loss += loss.item()
-
-    # Compute validation accuracy and loss
-    if total != 0:
-        validation_accuracy = correct / total
-        validation_loss /= (i + 1) # Average loss over all batches of the epoch
-    else :
-        validation_accuracy = 0
-        validation_loss = 0
-
-    return validation_accuracy, validation_loss
-
-
-def train_one_epoch_cnn(model, data_loader, loss_function, optimizer, device):
-    
-    # Enable training
-    model.train(True)
-
-    # Initialise accuracy variables
-    total = 0
-    correct = 0
-
-    # Initialise loss
-    train_loss = 0.0
-
-    # Pass over all batches
-    for i, batch in enumerate(data_loader):
-
-        # Load and prepare batch
-        data, label, name = batch
-        data = data.to(torch.float32).to(device)
-        label = label.to(torch.float32).to(device)
-
-        # Zero gradient
-        optimizer.zero_grad()
-
-        # Make predictions for batch
-        output = model(data)
-
-        # Update accuracy variables
-        _, predicted = torch.max(output.data, dim=1)
-
-        total += len(label)
-        batch_correct = (predicted == label).sum().item()
-        correct += batch_correct
-
-        # Compute loss
-        loss = loss_function(output, label.cuda().long())
-
-        # Compute gradient loss
-        loss.backward()
-
-        # Update weights
-        optimizer.step()
-
-        # Update losses
-        train_loss += loss.item()
-
-        # Log
-        if i % 5 == 0:
-            # Batch loss
-            print(f"    Batch {i:8}: accuracy={batch_correct / label.size(0):.4f} | loss={loss:.4f}")
-
-    # Compute validation accuracy and loss
-    train_accuracy = correct / total
-    train_loss /= (i + 1) # Average loss over all batches of the epoch
-    
-    return train_accuracy, train_loss
-
-def evaluate_cnn(model, data_loader, loss_function, device):
-    
-    # Initialise accuracy variables
-    total = 0
-    correct = 0
-
-    # Initialise losses
-    validation_loss = 0.0
-
-    # Freeze the model
-    model.eval()
-    with torch.no_grad():
-
-        # Iterate over batches
-        for i, batch in enumerate(data_loader):
-            
-            # Load and prepare batch
-            data, label, name = batch
-            data = data.to(torch.float32).to(device)
-            label = label.to(torch.float32).to(device)
-
-            # Make predictions for batch
-            output = model(data)
-
-            # Update accuracy variables
-            _, predicted = torch.max(output.data, dim=1)
-
-            total += len(label)
-            batch_correct = (predicted == label).sum().item()
-            correct += batch_correct
+            weight_t = torch.clone(label)
+            for i_lab in range(len(label)):
+                weight_t[i_lab] = weight[int(label[i_lab].item())]
+            weighted_batch_correct = (predicted == label) * weight_t
+            correct += weighted_batch_correct.sum().item()
 
             # Compute loss
             loss = loss_function(output, label.cuda().long())
@@ -420,8 +211,7 @@ def evaluate_cnn(model, data_loader, loss_function, device):
 
     return validation_accuracy, validation_loss
 
-
-def test_fc(model, test_data_loader, device=torch.device("cpu")):
+def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[0.3,0.7]):
     # Accuracy variables
     correct = 0
     total = 0
@@ -441,117 +231,23 @@ def test_fc(model, test_data_loader, device=torch.device("cpu")):
             label = label.to(torch.float32).to(device)
 
             # Make predictions for batch
-            data_flattened = data.view(data.size(0), -1)
-            output = model(data_flattened)
+            if type == "CNN":
+                output = model(data)
+            elif type == "LSTM":
+                output = model(data)
+            elif type == "FC":
+                data_flattened = data.view(data.size(0), -1)
+                output = model(data_flattened)
 
             # Update accuracy variables
             _, predicted = torch.max(output.data, dim=1)
 
             total += len(label)
-            batch_correct = (predicted == label).sum().item()
-            correct += batch_correct
-
-            for k in range(len(label)) :
-                if label[k]!=predicted[k] :
-                    misclassified.append((name[k], int(label[k].item())))
-
-            # Update confusion matrix variables
-            if all_label is None and all_predicted is None:
-                all_label = label.detach().clone()
-                all_predicted = predicted.detach().clone()
-            else:
-                all_label = torch.cat((all_label, label))
-                all_predicted = torch.cat((all_predicted, predicted))
-            
-    # Compute test accuracy
-    test_accuracy = correct / total
-
-    # Create "confusion matrix"
-    test_confusion_matrix = confusion_matrix(all_label.cpu(), all_predicted.cpu())
-
-    return test_accuracy, test_confusion_matrix, misclassified
-
-
-def test_lstm(model, test_data_loader, device=torch.device("cpu")):
-
-    # Accuracy variables
-    correct = 0
-    total = 0
-
-    # Confusion matrix variables
-    all_label = None
-    all_predicted = None
-
-    misclassified = []
-
-    with torch.no_grad():
-        for i, batch in enumerate(test_data_loader):
-            
-            # Load and prepare batch
-            data, label, name = batch
-            data = data.to(torch.float32).to(device)
-            label = label.to(torch.float32).to(device)
-
-            # Make predictions for batch
-            output = model(data)
-
-            # Update accuracy variables
-            _, predicted = torch.max(output.data, dim=1)
-
-            total += len(label)
-            batch_correct = (predicted == label).sum().item()
-            correct += batch_correct
-
-            for k in range(len(label)) :
-                if label[k]!=predicted[k] :
-                    misclassified.append((name[k], int(label[k].item())))
-
-            # Update confusion matrix variables
-            if all_label is None and all_predicted is None:
-                all_label = label.detach().clone()
-                all_predicted = predicted.detach().clone()
-            else:
-                all_label = torch.cat((all_label, label))
-                all_predicted = torch.cat((all_predicted, predicted))
-            
-    # Compute test accuracy
-    test_accuracy = correct / total
-
-    # Create "confusion matrix"
-    test_confusion_matrix = confusion_matrix(all_label.cpu(), all_predicted.cpu())
-
-    return test_accuracy, test_confusion_matrix, misclassified
-
-
-def test_cnn(model, test_data_loader, device=torch.device("cpu")):
-
-    # Accuracy variables
-    correct = 0
-    total = 0
-
-    # Confusion matrix variables
-    all_label = None
-    all_predicted = None
-
-    misclassified = []
-
-    with torch.no_grad():
-        for i, batch in enumerate(test_data_loader):
-            
-            # Load and prepare batch
-            data, label, name = batch
-            data = data.to(torch.float32).to(device)
-            label = label.to(torch.float32).to(device)
-
-            # Make predictions for batch
-            output = model(data)
-
-            # Update accuracy variables
-            _, predicted = torch.max(output.data, dim=1)
-
-            total += len(label)
-            batch_correct = (predicted == label).sum().item()
-            correct += batch_correct
+            weight_t = torch.clone(label)
+            for i_lab in range(len(label)):
+                weight_t[i_lab] = weight[int(label[i_lab].item())]
+            weighted_batch_correct = (predicted == label) * weight_t
+            correct += weighted_batch_correct.sum().item()
 
             for k in range(len(label)) :
                 if label[k]!=predicted[k] :

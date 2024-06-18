@@ -23,6 +23,7 @@ class MocaplabDatasetCNN(Dataset):
         self.header = None
         self.x = []
         self.y = []
+        self.data = []
         self.labels = None
         self.removed = []
 
@@ -46,6 +47,8 @@ class MocaplabDatasetCNN(Dataset):
                 if n==0:
                     header = line
                     self.header = list(set(header))
+                    if self.bones_to_keep is None:
+                        self.bones_to_keep = self.header
                     id = {}
                     for i, bone in enumerate(header):
                         if bone not in id.keys() and bone in self.bones_to_keep:
@@ -74,7 +77,7 @@ class MocaplabDatasetCNN(Dataset):
         labels.dropna(inplace=True)
         unique_val = labels.iloc[:,1].unique()
         self.class_dict = {}
-        for i, val in enumerate(unique_val):
+        for i, val in enumerate(unique_val[::-1]):
             self.class_dict[val] = i
         return self.class_dict
     
@@ -102,11 +105,11 @@ class MocaplabDatasetCNN(Dataset):
                     self.max_length = length
 
     def __getitem__(self, idx):
-        data_path = os.path.join(self.path, self.x[idx])
-
-        data = self.read_csv(data_path)
         label = self.y[idx]
-
+        if self.data and self.data[idx] is not None:
+            return self.data[idx], label, self.x[idx]
+        data_path = os.path.join(self.path, self.x[idx])
+        data = self.read_csv(data_path)
         if self.padding:
             data = data.tolist()
             for _ in range(self.max_length-len(data)) :
@@ -118,7 +121,9 @@ class MocaplabDatasetCNN(Dataset):
 
         data = np.array(data)
         data = np.expand_dims(data, axis=0)
-        
+        if not self.data:
+            self.data = [None]*len(self.y)
+        self.data[idx] = data
     
         return data, label, self.x[idx]
     
@@ -187,7 +192,7 @@ class MocaplabDatatestsetCNN(Dataset):
     def _create_labels_dict(self):
         labels = pd.read_csv(os.path.join(self.path,
                                           "Annotation_gloses.csv"), sep="\t")
-        unique_val = labels.iloc[:,1].unique()
+        unique_val = labels.iloc[:, 1].unique()
         self.class_dict = {}
         for i, val in enumerate(unique_val):
             self.class_dict[val] = i
@@ -238,3 +243,8 @@ class MocaplabDatatestsetCNN(Dataset):
         
     
         return data, label, self.x[idx]
+    
+    def get_labels_weights(self):
+        from collections import Counter
+        return {i: j/len(self.y) for i,j in zip(Counter(self.y).keys(),Counter(self.y).values())}
+    

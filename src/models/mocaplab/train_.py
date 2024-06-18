@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from src.train import create_optimizer
 from PIL import Image as im
 
-def train_one_epoch(model, data_loader, loss_function, optimizer, device):
+def train_one_epoch(model, data_loader, loss_function, optimizer, device, weight=[0.3, 0.7]):
 
     # Enable training
     model.train(True).double()
@@ -36,8 +36,8 @@ def train_one_epoch(model, data_loader, loss_function, optimizer, device):
         _, predicted = torch.max(output.data, dim=1)
 
         total += len(label)
-        batch_correct = (predicted == label).sum().item()
-        correct += batch_correct
+        weighted_batch_correct = (predicted == label) * torch.tensor(weight)[label]
+        correct += weighted_batch_correct.sum().item()
 
         # Compute loss
         loss = loss_function(output, label)
@@ -54,7 +54,7 @@ def train_one_epoch(model, data_loader, loss_function, optimizer, device):
         # Log
         if i % 5 == 0:
             # Batch loss
-            print(f"    Batch {i:8}: accuracy={batch_correct / label.size(0):.4f} | loss={loss:.4f}")
+            print(f"    Batch {i:8}: accuracy={weighted_batch_correct / label.size(0):.4f} | loss={loss:.4f}")
 
     # Compute validation accuracy and loss
     train_accuracy = correct / total
@@ -63,7 +63,7 @@ def train_one_epoch(model, data_loader, loss_function, optimizer, device):
     return train_accuracy, train_loss
 
 
-def evaluate(model, data_loader, loss_function, device):
+def evaluate(model, data_loader, loss_function, device, weight=[0.3,0.7]):
 
     # Initialise accuracy variables
     total = 0
@@ -91,8 +91,9 @@ def evaluate(model, data_loader, loss_function, device):
             _, predicted = torch.max(output.data, dim=1)
 
             total += len(label)
-            batch_correct = (predicted == label).sum().item()
-            correct += batch_correct
+            #batch_correct = (predicted == label).sum().item()
+            weighted_batch_correct = (predicted == label) * torch.tensor(weight)[label]
+            correct += weighted_batch_correct.sum().item()
             # Compute loss
             loss = loss_function(output, label.cuda().long())
 

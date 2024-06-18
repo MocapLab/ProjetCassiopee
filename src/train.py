@@ -38,7 +38,7 @@ def create_optimizer(optimizer_type, model, learning_rate, momentum=0):
 ###############################################################################
 
 
-def train_one_epoch(model, data_loader, loss_function, optimizer, loss_mmodality=5, accuracy=True):
+def train_one_epoch(model, data_loader, loss_function, optimizer, loss_mmodality=5, accuracy=True, weight=[0.3, 0.7]):
 
     # Enable training
     model.train(True)
@@ -68,7 +68,8 @@ def train_one_epoch(model, data_loader, loss_function, optimizer, loss_mmodality
             _, predicted = torch.max(output.data, 1)
             total += len(label)
             batch_correct = (predicted == label).sum().item()
-            correct += batch_correct
+            weighted_batch_correct = (predicted == label) * torch.tensor(weight)[label]
+            correct += weighted_batch_correct.sum().item()
 
         # Compute loss
         loss = loss_function(output, batch[loss_mmodality])
@@ -85,7 +86,7 @@ def train_one_epoch(model, data_loader, loss_function, optimizer, loss_mmodality
         # Log
         if i % 10 == 0:
             if accuracy:
-                print(f"    Batch {i}: accuracy={batch_correct / label.size(0)} | loss={loss}")
+                print(f"    Batch {i}: accuracy={weighted_batch_correct / label.size(0)} | loss={loss}")
             else:
                 print(f"    Batch {i}: loss={loss}")
 

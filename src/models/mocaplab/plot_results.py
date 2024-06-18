@@ -26,6 +26,7 @@ def plot_results(train_accuracies, train_losses,
         axs[0, 0].axvline(x=e + offset, color="r", ls="--")
         offset += e
     axs[0, 0].legend()
+    axs[0, 0].set_ylim([0, 1])
 
     # Plot loss over time
     axs[0, 1].plot(t, train_losses, label="Train loss")
@@ -35,6 +36,7 @@ def plot_results(train_accuracies, train_losses,
         axs[0, 1].axvline(x=e + offset, color="r", ls="--")
         offset += e
     axs[0, 1].legend()
+    axs[0, 1].set_ylim([0, 1])
 
     # Plot confusion matrix
     sns.heatmap(test_confusion_matrix, annot=True, cmap="flare",  fmt="d", cbar=True, ax=axs[1, 0])

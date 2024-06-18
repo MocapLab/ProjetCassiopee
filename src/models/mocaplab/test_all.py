@@ -3,12 +3,14 @@ import os
 from torch.utils.data import DataLoader
 import torch
 import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 src_folder = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),'..\..\..'))
 sys.path.append(src_folder)
 from src.setup import setup_python, setup_pytorch
-from src.dataset import MocaplabDatatestsetCNN
+from src.dataset import MocaplabDatatestsetCNN,MocaplabDatasetCNN
 from cnn.cnn import TestCNN
-
+from train import test_cnn
 if __name__ == "__main__":
 
     print("#### Set-Up ####")
@@ -22,12 +24,16 @@ if __name__ == "__main__":
     print("#### Dataset ####")
     
     bones_to_keep = list(set("UPHD;UPHD;UPHD;LFHD;LFHD;LFHD;RFHD;RFHD;RFHD;LBHD;LBHD;LBHD;RBHD;RBHD;RBHD;C7;C7;C7;T10;T10;T10;LBAC;LBAC;LBAC;RBAC;RBAC;RBAC;CLAV;CLAV;CLAV;STRN;STRN;STRN;LCLAV;LCLAV;LCLAV;RCLAV;RCLAV;RCLAV;LFSHO;LFSHO;LFSHO;LSHOULD;LSHOULD;LSHOULD;LBSHO;LBSHO;LBSHO;LUPA;LUPA;LUPA;LELB;LELB;LELB;LELBEXT;LELBEXT;LELBEXT;LFRM;LFRM;LFRM;LWRA;LWRA;LWRA;LWRB;LWRB;LWRB;RFSHO;RFSHO;RFSHO;RSHOULD;RSHOULD;RSHOULD;RBSHO;RBSHO;RBSHO;RUPA;RUPA;RUPA;RELB;RELB;RELB;RELBEXT;RELBEXT;RELBEXT;RFRM;RFRM;RFRM;RWRA;RWRA;RWRA;RWRB;RWRB;RWRB;LFWT;LFWT;LFWT;RFWT;RFWT;RFWT;LBWT;LBWT;LBWT;RBWT;RBWT;RBWT;LHIP;LHIP;LHIP;LUPLEG;LUPLEG;LUPLEG;LKNE;LKNE;LKNE;LPER;LPER;LPER;LTIB;LTIB;LTIB;LANK;LANK;LANK;LHEE;LHEE;LHEE;LMT5;LMT5;LMT5;LTOE;LTOE;LTOE;LMT1;LMT1;LMT1;RHIP;RHIP;RHIP;RUPLEG;RUPLEG;RUPLEG;RKNE;RKNE;RKNE;RPER;RPER;RPER;RTIB;RTIB;RTIB;RANK;RANK;RANK;RHEE;RHEE;RHEE;RMT5;RMT5;RMT5;RTOE;RTOE;RTOE;RMT1;RMT1;RMT1".split(';')))
-    
+    dataset_cnn_labelled = MocaplabDatasetCNN(path=(f"{src_folder}/data/mocaplab/LSDICOS"),
+                                padding=True, 
+                                train_test_ratio=8,
+                                validation_percentage=0.01, bones_to_keep=bones_to_keep)
     dataset_cnn = MocaplabDatatestsetCNN(path=(f"{src_folder}/data/mocaplab/LSDICOS"),
                                 padding=True, 
                                 train_test_ratio=8,
                                 validation_percentage=0.01, bones_to_keep=bones_to_keep)
     print("#### Data Loader ####")
+    
     # data_loader_fc = DataLoader(dataset_fc,
     #                          batch_size=1,
     #                          shuffle=False)
@@ -37,18 +43,24 @@ if __name__ == "__main__":
     data_loader_cnn = DataLoader(dataset_cnn,
                              batch_size=1,
                              shuffle=False)
+    test_data_loader = DataLoader(dataset_cnn_labelled,
+                             batch_size=1,
+                             shuffle=False)
     cnn = TestCNN()
 
     # Load the trained weights cnn old model
-    cnn.load_state_dict(torch.load((f"{src_folder}/src/models/mocaplab/all/saved_models/CNN/CNN_20240614_193233.ckpt"),
+    cnn.load_state_dict(torch.load((f"{src_folder}/src/models/mocaplab/all/saved_models/CNN/CNN_Mono_Bi_c3dbody.ckpt"),
                                     map_location=torch.device("cpu")))
+    # set the evaluation mode
+    test_acc, test_confusion_matrix, misclassified = test_cnn(cnn, test_data_loader, DEVICE)
+    sns.heatmap(test_confusion_matrix, annot=True, cmap="flare",  fmt="d", cbar=True)
+    plt.savefig(f"{src_folder}/train_results/mocaplab/CNN_Mono_Bi_c3dbody.png")
 
     # Load the trained weights cnn new model
     #cnn.load_state_dict(torch.load(("/home/self_supervised_learning_gr/self_supervised_learning/dev/ProjetCassiopee/src/models/mocaplab/cnn/saved_models/CNN_20240514_211739.ckpt"),
                                     # map_location=torch.device("cpu")))
 
-    # set the evaluation mode
-    cnn.eval()
+    
 
     heatmap_data = []   # a table that contains 112 lists of 100 lists of size 10 (10 max joints for each frame for each data)
 

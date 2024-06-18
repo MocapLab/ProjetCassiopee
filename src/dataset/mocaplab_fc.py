@@ -23,6 +23,7 @@ class MocaplabDatasetFC(Dataset):
         self.header = None
         self.x = []
         self.y = []
+        self.data = None
         self.labels = None
         self.removed = []
 
@@ -69,8 +70,18 @@ class MocaplabDatasetFC(Dataset):
     def __len__(self):
         return len(self.y)
     
+    def __repr__(self):
+        from collections import Counter
+        return f"MocaplabDatasetFC(path={self.path}, padding={self.padding}, train_test_ratio={self.train_test_ratio}, validation_percentage={self.validation_percentage}, nb_samples={len(self.y)}, bones_to_keep={self.bones_to_keep}), max_length={self.max_length}, removed={self.removed}, {[(i, j) for i,j in zip(Counter(self.y).keys(),Counter(self.y).values())]}"
+    
     def _create_labels_dict(self):
-        self.class_dict = {"Mono": 0, "Bi": 1}
+        labels = pd.read_csv(os.path.join(self.path,
+                                          "Annotation_gloses.csv"), sep="\t")
+        labels.dropna(inplace=True)
+        unique_val = labels.iloc[:,1].unique()
+        self.class_dict = {}
+        for i, val in enumerate(unique_val[::-1]):
+            self.class_dict[val] = i
         return self.class_dict
     
     def _load_data(self):
@@ -78,7 +89,7 @@ class MocaplabDatasetFC(Dataset):
         labels = pd.read_csv(os.path.join(self.path, "Annotation_gloses.csv"),
                              sep="\t")
         labels.dropna(inplace=True)
-        self.labels = {n: c for n, c in zip(labels["Nom.csv"], labels["Mono/Bi"]) if os.path.exists(os.path.join(self.path,f"{n}.csv"))}
+        self.labels = {n: c for n, c in zip(labels.iloc[:,0], labels.iloc[:,1]) if os.path.exists(os.path.join(self.path,f"{n}.csv"))}
         
         # Retrieve files
         files = os.listdir(self.path)
@@ -97,15 +108,23 @@ class MocaplabDatasetFC(Dataset):
                     self.max_length = length
 
     def __getitem__(self, idx):
+        label = self.y[idx]
+        if self.data and self.data[idx] is not None:
+            return self.data[idx], label, self.x[idx]
         data_path = os.path.join(self.path, self.x[idx])
 
         data = self._read_csv(data_path)
-        label = self.y[idx]
 
         if self.padding:
             data = data.tolist()
             for _ in range(self.max_length-len(data)) :
                 data.append([0.0 for _ in range(len(data[0]))])
             data = np.stack(data)
-        
+        if not self.data:
+            self.data = [None]*len(self.y)
+        self.data[idx] = data
         return data, label, self.x[idx]
+    
+    def get_labels_weights(self):
+        from collections import Counter
+        return {i: j/len(self.y) for i,j in zip(Counter(self.y).keys(),Counter(self.y).values())}
