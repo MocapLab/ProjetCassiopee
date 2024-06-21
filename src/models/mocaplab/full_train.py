@@ -5,7 +5,7 @@ import os
 src_folder = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),'..\..\..'))
 sys.path.append(src_folder)
 import torch
-from torch.utils.data import DataLoader, WeightedRandomSampler
+from torch.utils.data import DataLoader, WeightedRandomSampler, Subset
 
 from train import train, test
 from plot_results import plot_results
@@ -36,13 +36,14 @@ if __name__ == "__main__" :
     # '''
     # Fully connected Training
     # '''
-    sample_weight = [1, 0.2]
+    sample_weight = [3., 1.]
     # # Training parameters
-    BATCH_SIZE = 30 # Batch size
-    LOSS_FUNCTION = torch.nn.CrossEntropyLoss(weight=torch.tensor(sample_weight).to(DEVICE)) # Loss function
-    OPTIMIZER_TYPE = "SGD"                      # Type of optimizer "Adam" or "SGD"
-    EPOCHS = [2,999999]                      # Number of epochs
-    LEARNING_RATES = [0.1,0.01]     # Learning rates
+    BATCH_SIZE = 100 # Batch size
+    LOSS_FUNCTION = torch.nn.CrossEntropyLoss(weight=torch.tensor(sample_weight, dtype=torch.float).to(DEVICE)) # Loss function
+    #LOSS_FUNCTION = torch.nn.CrossEntropyLoss() # Loss function
+    OPTIMIZER_TYPE = "Adam"                      # Type of optimizer "Adam" or "SGD"
+    EPOCHS = [999999]                      # Number of epochs
+    LEARNING_RATES = [0.01]     # Learning rates
     EARLY_STOPPING = True # Early stopping flag
     PATIENCE = 10        # Early stopping patience
     MIN_DELTA = 0.001     # Early stopping minimum delta
@@ -65,16 +66,16 @@ if __name__ == "__main__" :
     print(dataset.get_labels_weights())
     # Split dataset
     n = len(dataset)
-    class_weights = dataset.get_labels_weights() # inverse relative amount of samples per class
+    class_weights_dict = dataset.get_labels_weights() # inverse relative amount of samples per class
     sample_weights = [0] * n
-
+    class_weights = [class_weights_dict[label] for label in class_weights_dict.keys()]
     for idx in range(n):
         (data, label, name) = dataset[idx]
-        sample_weights[idx] = class_weights[label]
+        sample_weights[idx] = class_weights_dict[label]
 
     sampler = WeightedRandomSampler(sample_weights, num_samples=len(sample_weights), replacement=True)
 
-    split = [int(n*0.8), int(n*0.1), int(n*0.1)]
+    split = [int(n*0.1), int(n*0.2), int(n*0.7)]
     diff = n - split[0] - split[1] - split[2]
     train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[split[0], split[1], split[2]+diff], generator=generator)
     #50% data
@@ -111,7 +112,7 @@ if __name__ == "__main__" :
     
     # Create neural network
     print("#### FC Model ####")
-    model = MocaplabFC(dataset.max_length*dataset[0][0].shape[1]).to(DEVICE)
+    model = MocaplabFC(dataset.max_length*dataset[0][0].shape[1], loss=LOSS_FUNCTION).to(DEVICE)
 
     """state_dict = torch.load("self_supervised_learning/dev/ProjetCassiopee/data/mocaplab/Cassiopée_Allbones")
     
@@ -162,6 +163,7 @@ if __name__ == "__main__" :
                                                                     MIN_DELTA,
                                                                     DEVICE,
                                                                     DEBUG,
+                                                                    class_weights=class_weights,
                                                                     model_type="FC")
         
         # Save training time stop
@@ -205,19 +207,14 @@ if __name__ == "__main__" :
         LSTM Training
         '''
         # Training parameters
-        BATCH_SIZE = 30 # Batch size
-        LOSS_FUNCTION = torch.nn.CrossEntropyLoss(weight=torch.tensor(sample_weight).to(DEVICE)) # Loss function
-        OPTIMIZER_TYPE = "Adam"                      # Type of optimizer
-        EPOCHS = [5,999999]                      # Number of epochs
-        LEARNING_RATES = [0.001,0.0001]     # Learning rates
+        BATCH_SIZE = 100 # Batch size
+        EPOCHS = [999999]                      # Number of epochs
+        LEARNING_RATES = [0.001]     # Learning rates
         EARLY_STOPPING = True # Early stopping flag
-        PATIENCE = 10        # Early stopping patience
+        PATIENCE = 15        # Early stopping patience
         MIN_DELTA = 0.01     # Early stopping minimum delta
 
         DEBUG = False # Debug flag
-
-        generator = torch.Generator()
-        generator.manual_seed(0)
         
         # Datasets
         print("#### LSTM Datasets ####")
@@ -228,10 +225,9 @@ if __name__ == "__main__" :
         # Split dataset
         n = len(dataset)
 
-        split = [int(n*0.8), int(n*0.1), int(n*0.1)]
-        diff = n - split[0] - split[1] - split[2]
-        train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[split[0], split[1], split[2]+diff], generator=generator)
-
+        train_dataset = Subset(dataset, train_dataset.indices)
+        validation_dataset = Subset(dataset, validation_dataset.indices)
+        test_dataset = Subset(dataset, test_dataset.indices)
         #50% data
         #diff = n - int(n*0.3) - int(n*0.2) - int(n*0.5)
         #train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[int(n*0.15), int(n*0.1), int(n*0.75)+diff], generator=generator)
@@ -293,6 +289,7 @@ if __name__ == "__main__" :
                                                                     MIN_DELTA,
                                                                     DEVICE,
                                                                     DEBUG,
+                                                                    class_weights=class_weights,
                                                                     model_type="LSTM")
         
         # Save training time stop
@@ -336,13 +333,12 @@ if __name__ == "__main__" :
     print("#### CNN Datasets ####")
     #bones_to_keep = None
     dataset = MocaplabDatasetCNN(data_path, padding=True, bones_to_keep=bones_to_keep)
-    generator = torch.Generator()
-    generator.manual_seed(0)
     # Split dataset
     n = len(dataset)
-    split = [int(n*0.8), int(n*0.1), int(n*0.1)]
-    diff = n - split[0] - split[1] - split[2]
-    train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[split[0], split[1], split[2]+diff], generator=generator)
+    
+    train_dataset = Subset(dataset, train_dataset.indices)
+    validation_dataset = Subset(dataset, validation_dataset.indices)
+    test_dataset = Subset(dataset, test_dataset.indices)
     from collections import defaultdict
 
     label_counter = defaultdict(int)
@@ -355,18 +351,16 @@ if __name__ == "__main__" :
     # weight[dataset.labels == 1] = 0.73
 
     #WeightedRandomSampler(weight,)
-    for i in range(25,40,5):
+    for i in range(40,50,5):
     # Training parameters
-        BATCH_SIZE = i                                  # Batch size
-        LOSS_FUNCTION = torch.nn.CrossEntropyLoss(weight=torch.tensor(sample_weight).to(DEVICE))     # Loss function
-        OPTIMIZER_TYPE = "SGD"                          # Type of optimizer
-        EPOCHS = [2,2,15,999999]                               # Number of epochs
-        LEARNING_RATES = [0.05, 0.01, 0.001,0.0001]                  # Learning rates
+        BATCH_SIZE = i                                  # Batch sizes
+        EPOCHS = [999999]                        # Number of epochs
+        LEARNING_RATES = [0.01]    # Learning rates
         EARLY_STOPPING = True                           # Early stopping flag
-        PATIENCE = 10                               # Early stopping patience
-        MIN_DELTA = 0.01                              # Early stopping minimum delta
+        PATIENCE = 10                                   # Early stopping patience
+        MIN_DELTA = 0.01                                # Early stopping minimum delta
 
-        DEBUG = False # Debug flag
+        DEBUG = False                                   # Debug flag
 
 
         
@@ -462,6 +456,7 @@ if __name__ == "__main__" :
                                                                     MIN_DELTA,
                                                                     DEVICE,
                                                                     DEBUG,
+                                                                    class_weights=class_weights,
                                                                     model_type="CNN")
         
         # Save training time stop

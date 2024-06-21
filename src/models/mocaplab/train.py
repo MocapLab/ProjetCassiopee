@@ -25,6 +25,7 @@ def train(
         min_delta=1e-3,
         device=torch.device("cpu"),
         debug=False,
+        class_weights=[0.3, 0.7],
         model_type="FC"):
 
     # Accuracies
@@ -49,20 +50,20 @@ def train(
 
         for epoch in range(epochs):
             print(f"#### EPOCH {epoch} ####")
-            
+            model.train(True)
             # Train for one epoch
             if debug:
                 with torch.autograd.detect_anomaly():
-                    train_accuracy, train_loss = train_one_epoch(model, model_type, train_data_loader, loss_function, optimizer, device)
+                    train_accuracy, train_loss = train_one_epoch(model, model_type, train_data_loader, loss_function, optimizer, device, class_weights)
                     train_accuracies.append(train_accuracy)
                     train_losses.append(train_loss)
             else:
-                train_accuracy, train_loss = train_one_epoch(model,model_type, train_data_loader, loss_function, optimizer, device)
+                train_accuracy, train_loss = train_one_epoch(model,model_type, train_data_loader, loss_function, optimizer, device, class_weights)
                 train_accuracies.append(train_accuracy)
                 train_losses.append(train_loss)
 
             # Evaluate model
-            validation_accuracy, validation_loss = evaluate(model,model_type, validation_data_loader, loss_function, device)
+            validation_accuracy, validation_loss = evaluate(model,model_type, validation_data_loader, loss_function, device, class_weights)
             
             validation_accuracies.append(validation_accuracy)
             validation_losses.append(validation_loss)
@@ -135,7 +136,7 @@ def train_one_epoch(model, type, data_loader, loss_function, optimizer, device, 
         correct += weighted_batch_correct.sum().item()
 
         # Compute loss
-        loss = loss_function(output, label.cuda().long())
+        loss = loss_function(output, label.to(device).long())
 
         # Compute gradient loss
         loss.backward()
@@ -221,7 +222,7 @@ def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[0.3,
     all_predicted = None
 
     misclassified = []
-
+    model.eval()
     with torch.no_grad():
         for i, batch in enumerate(test_data_loader):
             
@@ -255,8 +256,8 @@ def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[0.3,
 
             # Update confusion matrix variables
             if all_label is None and all_predicted is None:
-                all_label = label.detach().clone()
-                all_predicted = predicted.detach().clone()
+                all_label = label.clone().detach()
+                all_predicted = predicted.clone().detach()
             else:
                 all_label = torch.cat((all_label, label))
                 all_predicted = torch.cat((all_predicted, predicted))
