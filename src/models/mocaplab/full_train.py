@@ -36,12 +36,12 @@ if __name__ == "__main__" :
     # '''
     # Fully connected Training
     # '''
-    sample_weight = [3., 1.]
+    sample_weight = [1., 1.]
     # # Training parameters
-    BATCH_SIZE = 100 # Batch size
-    LOSS_FUNCTION = torch.nn.CrossEntropyLoss(weight=torch.tensor(sample_weight, dtype=torch.float).to(DEVICE)) # Loss function
-    #LOSS_FUNCTION = torch.nn.CrossEntropyLoss() # Loss function
-    OPTIMIZER_TYPE = "Adam"                      # Type of optimizer "Adam" or "SGD"
+    BATCH_SIZE = 10 # Batch size
+    # LOSS_FUNCTION = torch.nn.CrossEntropyLoss(weight=torch.tensor(sample_weight, dtype=torch.float).to(DEVICE)) # Loss function
+    LOSS_FUNCTION = torch.nn.CrossEntropyLoss() # Loss function
+    OPTIMIZER_TYPE = "SGD"                      # Type of optimizer "Adam" or "SGD"
     EPOCHS = [999999]                      # Number of epochs
     LEARNING_RATES = [0.01]     # Learning rates
     EARLY_STOPPING = True # Early stopping flag
@@ -58,8 +58,8 @@ if __name__ == "__main__" :
     # # bones_to_keep = "abdomenUpper_T_glob;abdomenUpper_T_glob;abdomenUpper_T_glob;chestLower_T_glob;chestLower_T_glob;chestLower_T_glob;chestUpper_T_glob;chestUpper_T_glob;chestUpper_T_glob;neckLower_T_glob;neckLower_T_glob;neckLower_T_glob;rCollar_T_glob;rCollar_T_glob;rCollar_T_glob;rShldrBend_T_glob;rShldrBend_T_glob;rShldrBend_T_glob;rShldrTwist_T_glob;rShldrTwist_T_glob;rShldrTwist_T_glob;rForearmBend_T_glob;rForearmBend_T_glob;rForearmBend_T_glob;rForearmTwist_T_glob;rForearmTwist_T_glob;rForearmTwist_T_glob;rHand_T_glob;rHand_T_glob;rHand_T_glob;rCarpal4_T_glob;rCarpal4_T_glob;rCarpal4_T_glob;rPinky1_T_glob;rPinky1_T_glob;rPinky1_T_glob;rPinky2_T_glob;rPinky2_T_glob;rPinky2_T_glob;rPinky3_T_glob;rPinky3_T_glob;rPinky3_T_glob;rPinky3_end_T_glob;rPinky3_end_T_glob;rPinky3_end_T_glob;rCarpal3_T_glob;rCarpal3_T_glob;rCarpal3_T_glob;rRing1_T_glob;rRing1_T_glob;rRing1_T_glob;rRing2_T_glob;rRing2_T_glob;rRing2_T_glob;rRing3_T_glob;rRing3_T_glob;rRing3_T_glob;rRing3_end_T_glob;rRing3_end_T_glob;rRing3_end_T_glob;rCarpal2_T_glob;rCarpal2_T_glob;rCarpal2_T_glob;rMid1_T_glob;rMid1_T_glob;rMid1_T_glob;rMid2_T_glob;rMid2_T_glob;rMid2_T_glob;rMid3_T_glob;rMid3_T_glob;rMid3_T_glob;rMid3_end_T_glob;rMid3_end_T_glob;rMid3_end_T_glob;rCarpal1_T_glob;rCarpal1_T_glob;rCarpal1_T_glob;rIndex1_T_glob;rIndex1_T_glob;rIndex1_T_glob;rIndex2_T_glob;rIndex2_T_glob;rIndex2_T_glob;rIndex3_T_glob;rIndex3_T_glob;rIndex3_T_glob;rIndex3_end_T_glob;rIndex3_end_T_glob;rIndex3_end_T_glob;rThumb1_T_glob;rThumb1_T_glob;rThumb1_T_glob;rThumb2_T_glob;rThumb2_T_glob;rThumb2_T_glob;rThumb3_T_glob;rThumb3_T_glob;rThumb3_T_glob;rThumb3_end_T_glob;rThumb3_end_T_glob;rThumb3_end_T_glob;lCollar_T_glob;lCollar_T_glob;lCollar_T_glob;lShldrBend_T_glob;lShldrBend_T_glob;lShldrBend_T_glob;lShldrTwist_T_glob;lShldrTwist_T_glob;lShldrTwist_T_glob;lForearmBend_T_glob;lForearmBend_T_glob;lForearmBend_T_glob;lForearmTwist_T_glob;lForearmTwist_T_glob;lForearmTwist_T_glob;lHand_T_glob;lHand_T_glob;lHand_T_glob;lCarpal4_T_glob;lCarpal4_T_glob;lCarpal4_T_glob;lPinky1_T_glob;lPinky1_T_glob;lPinky1_T_glob;lPinky2_T_glob;lPinky2_T_glob;lPinky2_T_glob;lPinky3_T_glob;lPinky3_T_glob;lPinky3_T_glob;lPinky3_end_T_glob;lPinky3_end_T_glob;lPinky3_end_T_glob;lCarpal3_T_glob;lCarpal3_T_glob;lCarpal3_T_glob;lRing1_T_glob;lRing1_T_glob;lRing1_T_glob;lRing2_T_glob;lRing2_T_glob;lRing2_T_glob;lRing3_T_glob;lRing3_T_glob;lRing3_T_glob;lRing3_end_T_glob;lRing3_end_T_glob;lRing3_end_T_glob;lCarpal2_T_glob;lCarpal2_T_glob;lCarpal2_T_glob;lMid1_T_glob;lMid1_T_glob;lMid1_T_glob;lMid2_T_glob;lMid2_T_glob;lMid2_T_glob;lMid3_T_glob;lMid3_T_glob;lMid3_T_glob;lMid3_end_T_glob;lMid3_end_T_glob;lMid3_end_T_glob;lCarpal1_T_glob;lCarpal1_T_glob;lCarpal1_T_glob;lIndex1_T_glob;lIndex1_T_glob;lIndex1_T_glob;lIndex2_T_glob;lIndex2_T_glob;lIndex2_T_glob;lIndex3_T_glob;lIndex3_T_glob;lIndex3_T_glob;lIndex3_end_T_glob;lIndex3_end_T_glob;lIndex3_end_T_glob;lThumb1_T_glob;lThumb1_T_glob;lThumb1_T_glob;lThumb2_T_glob;lThumb2_T_glob;lThumb2_T_glob;lThumb3_T_glob;lThumb3_T_glob;lThumb3_T_glob;lThumb3_end_T_glob;lThumb3_end_T_glob;lThumb3_end_T_glob".split(';')
 
     # bones_to_keep = list(set("C7;C7;C7;T10;T10;T10;LBAC;LBAC;LBAC;RBAC;RBAC;RBAC;CLAV;CLAV;CLAV;STRN;STRN;STRN;LCLAV;LCLAV;LCLAV;RCLAV;RCLAV;RCLAV;LFSHO;LFSHO;LFSHO;LSHOULD;LSHOULD;LSHOULD;LBSHO;LBSHO;LBSHO;LUPA;LUPA;LUPA;LELB;LELB;LELB;LELBEXT;LELBEXT;LELBEXT;LFRM;LFRM;LFRM;LWRA;LWRA;LWRA;LWRB;LWRB;LWRB;RFSHO;RFSHO;RFSHO;RSHOULD;RSHOULD;RSHOULD;RBSHO;RBSHO;RBSHO;RUPA;RUPA;RUPA;RELB;RELB;RELB;RELBEXT;RELBEXT;RELBEXT;RFRM;RFRM;RFRM;RWRA;RWRA;RWRA;RWRB;RWRB;RWRB;LFWT;LFWT;LFWT;RFWT;RFWT;RFWT;LBWT;LBWT;LBWT;RBWT;RBWT;RBWT".split(';')))
-    bones_to_keep = list(set("UPHD;LFHD;RFHD;LBHD;RBHD;C7;C7;C7;T10;T10;T10;LBAC;LBAC;LBAC;RBAC;RBAC;RBAC;CLAV;CLAV;CLAV;STRN;STRN;STRN;LCLAV;LCLAV;LCLAV;RCLAV;RCLAV;RCLAV;LFSHO;LFSHO;LFSHO;LSHOULD;LSHOULD;LSHOULD;LBSHO;LBSHO;LBSHO;LUPA;LUPA;LUPA;LELB;LELB;LELB;LELBEXT;LELBEXT;LELBEXT;LFRM;LFRM;LFRM;LWRA;LWRA;LWRA;LWRB;LWRB;LWRB;RFSHO;RFSHO;RFSHO;RSHOULD;RSHOULD;RSHOULD;RBSHO;RBSHO;RBSHO;RUPA;RUPA;RUPA;RELB;RELB;RELB;RELBEXT;RELBEXT;RELBEXT;RFRM;RFRM;RFRM;RWRA;RWRA;RWRA;RWRB;RWRB;RWRB;LFWT;LFWT;LFWT;RFWT;RFWT;RFWT;LBWT;LBWT;LBWT;RBWT;RBWT;RBWT;LHIP;LHIP;LHIP;LUPLEG;LUPLEG;LUPLEG;LKNE;LKNE;LKNE;LPER;LPER;LPER;LTIB;LTIB;LTIB;LANK;LANK;LANK;LHEE;LHEE;LHEE;LMT5;LMT5;LMT5;LTOE;LTOE;LTOE;LMT1;LMT1;LMT1;RHIP;RHIP;RHIP;RUPLEG;RUPLEG;RUPLEG;RKNE;RKNE;RKNE;RPER;RPER;RPER;RTIB;RTIB;RTIB;RANK;RANK;RANK;RHEE;RHEE;RHEE;RMT5;RMT5;RMT5;RTOE;RTOE;RTOE;RMT1;RMT1;RMT1".split(';')))
-    data_path = '%s/data/mocaplab/LSDICOS'%src_folder
+    bones_to_keep = list(set("CC_Base_Waist;CC_Base_Waist;CC_Base_Waist;CC_Base_Waist;CC_Base_Waist;CC_Base_Waist;CC_Base_Spine01;CC_Base_Spine01;CC_Base_Spine01;CC_Base_Spine01;CC_Base_Spine01;CC_Base_Spine01;CC_Base_Spine02;CC_Base_Spine02;CC_Base_Spine02;CC_Base_Spine02;CC_Base_Spine02;CC_Base_Spine02;CC_Base_R_Clavicle;CC_Base_R_Clavicle;CC_Base_R_Clavicle;CC_Base_R_Clavicle;CC_Base_R_Clavicle;CC_Base_R_Clavicle;CC_Base_R_Upperarm;CC_Base_R_Upperarm;CC_Base_R_Upperarm;CC_Base_R_Upperarm;CC_Base_R_Upperarm;CC_Base_R_Upperarm;CC_Base_R_UpperarmTwist02;CC_Base_R_UpperarmTwist02;CC_Base_R_UpperarmTwist02;CC_Base_R_UpperarmTwist02;CC_Base_R_UpperarmTwist02;CC_Base_R_UpperarmTwist02;CC_Base_L_Clavicle;CC_Base_L_Clavicle;CC_Base_L_Clavicle;CC_Base_L_Clavicle;CC_Base_L_Clavicle;CC_Base_L_Clavicle;CC_Base_L_Upperarm;CC_Base_L_Upperarm;CC_Base_L_Upperarm;CC_Base_L_Upperarm;CC_Base_L_Upperarm;CC_Base_L_Upperarm;CC_Base_L_UpperarmTwist02;CC_Base_L_UpperarmTwist02;CC_Base_L_UpperarmTwist02;CC_Base_L_UpperarmTwist02;CC_Base_L_UpperarmTwist02;CC_Base_L_UpperarmTwist02;C_Base_NeckTwist01;CC_Base_NeckTwist01;CC_Base_NeckTwist01;CC_Base_NeckTwist01;CC_Base_NeckTwist01;CC_Base_NeckTwist01;CC_Base_NeckTwist02;CC_Base_NeckTwist02;CC_Base_NeckTwist02;CC_Base_NeckTwist02;CC_Base_NeckTwist02;CC_Base_NeckTwist02;CC_Base_Head;CC_Base_Head;CC_Base_Head;CC_Base_Head;CC_Base_Head;CC_Base_Head;lowerarm_l;lowerarm_l;lowerarm_l;lowerarm_l;lowerarm_l;lowerarm_l;lowerarm_twist_01_l;lowerarm_twist_01_l;lowerarm_twist_01_l;lowerarm_twist_01_l;lowerarm_twist_01_l;lowerarm_twist_01_l;hand_l;hand_l;hand_l;hand_l;hand_l;hand_l;lowerarm_r;lowerarm_r;lowerarm_r;lowerarm_r;lowerarm_r;lowerarm_r;lowerarm_twist_01_r;lowerarm_twist_01_r;lowerarm_twist_01_r;lowerarm_twist_01_r;lowerarm_twist_01_r;lowerarm_twist_01_r;hand_r;hand_r;hand_r;hand_r;hand_r;hand_r".split(';')))
+    data_path = '%s/data/mocaplab/Autoannotation'%src_folder
     dataset = MocaplabDatasetFC(data_path, padding=True, bones_to_keep=bones_to_keep)
     print(dataset)
     
@@ -75,7 +75,7 @@ if __name__ == "__main__" :
 
     sampler = WeightedRandomSampler(sample_weights, num_samples=len(sample_weights), replacement=True)
 
-    split = [int(n*0.1), int(n*0.2), int(n*0.7)]
+    split = [int(n*0.4), int(n*0.4), int(n*0.2)]
     diff = n - split[0] - split[1] - split[2]
     train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[split[0], split[1], split[2]+diff], generator=generator)
     #50% data
@@ -112,7 +112,7 @@ if __name__ == "__main__" :
     
     # Create neural network
     print("#### FC Model ####")
-    model = MocaplabFC(dataset.max_length*dataset[0][0].shape[1], loss=LOSS_FUNCTION).to(DEVICE)
+    model = MocaplabFC(dataset.max_length*dataset[0][0].shape[1], loss=LOSS_FUNCTION, numclass=2).to(DEVICE)
 
     """state_dict = torch.load("self_supervised_learning/dev/ProjetCassiopee/data/mocaplab/Cassiopée_Allbones")
     
@@ -163,24 +163,26 @@ if __name__ == "__main__" :
                                                                     MIN_DELTA,
                                                                     DEVICE,
                                                                     DEBUG,
-                                                                    class_weights=class_weights,
+                                                                    # class_weights=class_weights,
                                                                     model_type="FC")
         
         # Save training time stop
         stop_timestamp = datetime.now()
         
         # Test model
+        
         test_acc, test_confusion_matrix, misclassified = test(model, "FC",test_data_loader, DEVICE)
 
         # Plot results
-        plot_results(train_acc, train_loss,
-                    val_acc, val_loss,
-                    run_epochs, type(model).__name__, start_timestamp, DEVICE,
-                    LOSS_FUNCTION, OPTIMIZER_TYPE,
-                    EPOCHS, LEARNING_RATES, EARLY_STOPPING, PATIENCE, MIN_DELTA,
-                    test_acc, test_confusion_matrix, stop_timestamp, model_path,
-                    [])
-                    #misclassified)
+        if test_acc > 0.8:
+            plot_results(train_acc, train_loss,
+                        val_acc, val_loss,
+                        run_epochs, type(model).__name__, start_timestamp, DEVICE,
+                        LOSS_FUNCTION, OPTIMIZER_TYPE,
+                        EPOCHS, LEARNING_RATES, EARLY_STOPPING, PATIENCE, MIN_DELTA,
+                        test_acc, test_confusion_matrix, stop_timestamp, model_path,
+                        [])
+                        #misclassified)
         
         # Save model
         if test_acc > 0.8:
@@ -207,7 +209,7 @@ if __name__ == "__main__" :
         LSTM Training
         '''
         # Training parameters
-        BATCH_SIZE = 100 # Batch size
+        BATCH_SIZE = 10 # Batch size
         EPOCHS = [999999]                      # Number of epochs
         LEARNING_RATES = [0.001]     # Learning rates
         EARLY_STOPPING = True # Early stopping flag
@@ -228,17 +230,6 @@ if __name__ == "__main__" :
         train_dataset = Subset(dataset, train_dataset.indices)
         validation_dataset = Subset(dataset, validation_dataset.indices)
         test_dataset = Subset(dataset, test_dataset.indices)
-        #50% data
-        #diff = n - int(n*0.3) - int(n*0.2) - int(n*0.5)
-        #train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[int(n*0.15), int(n*0.1), int(n*0.75)+diff], generator=generator)
-        
-        #25% data
-        #diff = n - int(n*0.15) - int(n*0.1) - int(n*0.75)
-        #train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[int(n*0.15), int(n*0.1), int(n*0.75)+diff], generator=generator)
-        
-        #10% data
-        # diff = n - int(n*0.05) - int(n*0.05) - int(n*0.9)
-        # train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[int(n*0.05), int(n*0.05), int(n*0.90)+diff], generator=generator)
         
         print(f"Total length -> {len(dataset)} samples")
         print(f"Train dataset -> {len(train_dataset)} samples")
@@ -262,7 +253,7 @@ if __name__ == "__main__" :
         
         # Create neural network
         print("#### LSTM Model ####")
-        model = LSTM(input_size=dataset[0][0].shape[1], hidden_size=48, num_layers=4, output_size=2).to(DEVICE)
+        model = LSTM(input_size=dataset[0][0].shape[1], hidden_size=64, num_layers=6, output_size=2).to(DEVICE)
 
         # Save training time start
         start_timestamp = datetime.now()
@@ -289,7 +280,7 @@ if __name__ == "__main__" :
                                                                     MIN_DELTA,
                                                                     DEVICE,
                                                                     DEBUG,
-                                                                    class_weights=class_weights,
+                                                                    # class_weights=class_weights,
                                                                     model_type="LSTM")
         
         # Save training time stop
@@ -351,7 +342,7 @@ if __name__ == "__main__" :
     # weight[dataset.labels == 1] = 0.73
 
     #WeightedRandomSampler(weight,)
-    for i in range(40,50,5):
+    for i in range(10,11,1):
     # Training parameters
         BATCH_SIZE = i                                  # Batch sizes
         EPOCHS = [999999]                        # Number of epochs
@@ -362,22 +353,6 @@ if __name__ == "__main__" :
 
         DEBUG = False                                   # Debug flag
 
-
-        
-        # Datasets
-        
-        #50% data
-        #diff = n - int(n*0.3) - int(n*0.2) - int(n*0.5)
-        #train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[int(n*0.15), int(n*0.1), int(n*0.75)+diff], generator=generator)
-        
-        #25% data
-        #diff = n - int(n*0.15) - int(n*0.1) - int(n*0.75)
-        #train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[int(n*0.15), int(n*0.1), int(n*0.75)+diff], generator=generator)
-        
-        #10% data
-        #diff = n - int(n*0.05) - int(n*0.05) - int(n*0.9)
-        #train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[int(n*0.05), int(n*0.05), int(n*0.90)+diff], generator=generator)
-        
         print(f"Total length -> {len(dataset)} samples")
         print(f"Train dataset -> {len(train_dataset)} samples")
         print(f"Test dataset -> {len(test_dataset)} samples")
@@ -456,7 +431,7 @@ if __name__ == "__main__" :
                                                                     MIN_DELTA,
                                                                     DEVICE,
                                                                     DEBUG,
-                                                                    class_weights=class_weights,
+                                                                    # class_weights=class_weights,
                                                                     model_type="CNN")
         
         # Save training time stop

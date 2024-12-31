@@ -1,10 +1,11 @@
 import os
 import random
 import pandas as pd
-import csv
 from torch.utils.data import Dataset
 import numpy as np
 from PIL import Image as im
+from .mcl_io import read_csv as mcl_read_csv
+from .mcl_io import load_data as mcl_load_data
 
 class MocaplabDatasetCNN(Dataset):
     """
@@ -39,33 +40,9 @@ class MocaplabDatasetCNN(Dataset):
             self.y = [y for x,y in x_and_y]
     
     def read_csv(self, csv_file) :
-        data = []
-        with open(csv_file, 'r') as file:
-            csv_reader = csv.reader(file, delimiter=';')
-            n=0
-            for line in csv_reader:
-                if n==0:
-                    header = line
-                    self.header = list(set(header))
-                    if self.bones_to_keep is None:
-                        self.bones_to_keep = self.header
-                    id = {}
-                    for i, bone in enumerate(header):
-                        if bone not in id.keys() and bone in self.bones_to_keep:
-                            id[bone] = [i]
-                        elif bone in id.keys() and bone in self.bones_to_keep:
-                            id[bone].extend([i])
-                if n>=2:
-                    values = []
-                    if id:
-                        for bone in id.keys():
-                            for i in id[bone]:
-                                values.append(float(line[i]))
-                        data.append(values)
-                n+=1
-        data = np.stack(data)
-        if data.shape[1]!=len(self.bones_to_keep)*3:
-            raise ValueError
+        data, self.header, self.bones_to_keep = mcl_read_csv(csv_file, self.bones_to_keep)
+        if data.shape[1]!=len(self.bones_to_keep)*6:
+            ValueError(f"missing {set(self.bones_to_keep) - set(self.header)}, for {csv_file}")
         return data
 
     def __len__(self):
@@ -82,27 +59,7 @@ class MocaplabDatasetCNN(Dataset):
         return self.class_dict
     
     def _load_data(self):
-        # Retrieve labels
-        labels = pd.read_csv(os.path.join(self.path,
-                                          "Annotation_gloses.csv"), sep="\t")
-        labels.dropna(inplace=True)
-        self.labels = {n: c for n, c in zip(labels.iloc[:,0], labels.iloc[:,1]) if os.path.exists(os.path.join(self.path,f"{n}.csv"))}
-        
-        # Retrieve files
-        files = os.listdir(self.path)
-        for name, label in self.labels.items():
-            filename = name + ".csv"
-            if filename not in files:
-                self.removed.append(filename)
-            else:
-                self.x.append(filename)
-                self.y.append(self.class_dict[label])
-
-                # Retrieve max length
-                data = self.read_csv(os.path.join(self.path, filename))
-                length = len(data)
-                if length > self.max_length:
-                    self.max_length = length
+        self.labels, self.max_length, self.x, self.y, self.removed, self.header, self.bones_to_keep = mcl_load_data(self.path, self.class_dict, self.max_length, self.x, self.y, self.removed)
 
     def __getitem__(self, idx):
         label = self.y[idx]
@@ -159,31 +116,9 @@ class MocaplabDatatestsetCNN(Dataset):
             self.y = [y for x,y in x_and_y]
     
     def read_csv(self, csv_file) :
-        data = []
-        with open(csv_file, 'r') as file:
-            csv_reader = csv.reader(file, delimiter=';')
-            n=0
-            for line in csv_reader:
-                if n==0:
-                    header = line
-                    self.header = list(set(header))
-                    id = {}
-                    for i, bone in enumerate(header):
-                        if bone not in id.keys() and bone in self.bones_to_keep:
-                            id[bone] = [i]
-                        elif bone in id.keys() and bone in self.bones_to_keep:
-                            id[bone].extend([i])
-                if n>=2:
-                    values = []
-                    if id:
-                        for bone in id.keys():
-                            for i in id[bone]:
-                                values.append(float(line[i]))
-                        data.append(values)
-                n+=1
-        data = np.stack(data)
-        if data.shape[1]!=len(self.bones_to_keep)*3:
-            raise ValueError(f"missing {set(self.bones_to_keep) - set(self.header)}, for {csv_file}")
+        data, self.header, self.bones_to_keep = mcl_read_csv(csv_file, self.bones_to_keep)
+        if data.shape[1]!=len(self.bones_to_keep)*6:
+            ValueError(f"missing {set(self.bones_to_keep) - set(self.header)}, for {csv_file}")
         return data
 
     def __len__(self):

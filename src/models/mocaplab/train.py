@@ -25,7 +25,7 @@ def train(
         min_delta=1e-3,
         device=torch.device("cpu"),
         debug=False,
-        class_weights=[0.3, 0.7],
+        class_weights=None,
         model_type="FC"):
 
     # Accuracies
@@ -91,10 +91,12 @@ def train(
 
     return train_accuracies, train_losses, validation_accuracies, validation_losses, run_epochs
 
-def train_one_epoch(model, type, data_loader, loss_function, optimizer, device, weight=[0.3,0.7]):
+def train_one_epoch(model, type, data_loader, loss_function, optimizer, device, weight=None):
     
     # Enable training
     model.train(True)
+    if weight is None:
+        weight = [1.,1.]
 
     # Initialise accuracy variables
     total = 0
@@ -158,7 +160,7 @@ def train_one_epoch(model, type, data_loader, loss_function, optimizer, device, 
     
     return train_accuracy, train_loss
 
-def evaluate(model, type, data_loader, loss_function, device, weight=[0.3,0.7]):
+def evaluate(model, type, data_loader, loss_function, device, weight=[1.,1.]):
     
     # Initialise accuracy variables
     total = 0
@@ -212,7 +214,7 @@ def evaluate(model, type, data_loader, loss_function, device, weight=[0.3,0.7]):
 
     return validation_accuracy, validation_loss
 
-def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[0.3,0.7]):
+def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[1.,1.]):
     # Accuracy variables
     correct = 0
     total = 0
