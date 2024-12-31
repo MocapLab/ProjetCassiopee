@@ -25,7 +25,7 @@ def train(
         min_delta=1e-3,
         device=torch.device("cpu"),
         debug=False,
-        class_weights=None,
+        class_weights=[1.,1.],
         model_type="FC"):
 
     # Accuracies
@@ -70,6 +70,11 @@ def train(
 
             print(f"Train:      accuracy={train_accuracy:.8f} | loss={train_loss:.8f}")
             print(f"Validation: accuracy={validation_accuracy:.8f} | loss={validation_loss:.8f}")
+
+            if validation_losses[epoch]>validation_losses[epoch - 1]:
+                print('Better on validation!')
+            else:
+                print('Worse on validation!')
 
             # Early stopping
             if early_stopping:

@@ -38,10 +38,10 @@ if __name__ == "__main__" :
     # '''
     sample_weight = [1., 1.]
     # # Training parameters
-    BATCH_SIZE = 10 # Batch size
+    BATCH_SIZE = 2 # Batch size
     # LOSS_FUNCTION = torch.nn.CrossEntropyLoss(weight=torch.tensor(sample_weight, dtype=torch.float).to(DEVICE)) # Loss function
     LOSS_FUNCTION = torch.nn.CrossEntropyLoss() # Loss function
-    OPTIMIZER_TYPE = "SGD"                      # Type of optimizer "Adam" or "SGD"
+    OPTIMIZER_TYPE = "Adam"                      # Type of optimizer "Adam" or "SGD"
     EPOCHS = [999999]                      # Number of epochs
     LEARNING_RATES = [0.01]     # Learning rates
     EARLY_STOPPING = True # Early stopping flag
@@ -63,7 +63,7 @@ if __name__ == "__main__" :
     dataset = MocaplabDatasetFC(data_path, padding=True, bones_to_keep=bones_to_keep)
     print(dataset)
     
-    print(dataset.get_labels_weights())
+    # print(dataset.get_labels_weights())
     # Split dataset
     n = len(dataset)
     class_weights_dict = dataset.get_labels_weights() # inverse relative amount of samples per class
@@ -75,7 +75,7 @@ if __name__ == "__main__" :
 
     sampler = WeightedRandomSampler(sample_weights, num_samples=len(sample_weights), replacement=True)
 
-    split = [int(n*0.4), int(n*0.4), int(n*0.2)]
+    split = [int(n*0.05), int(n*0.05), int(n*0.9)]
     diff = n - split[0] - split[1] - split[2]
     train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[split[0], split[1], split[2]+diff], generator=generator)
     #50% data
@@ -163,7 +163,7 @@ if __name__ == "__main__" :
                                                                     MIN_DELTA,
                                                                     DEVICE,
                                                                     DEBUG,
-                                                                    # class_weights=class_weights,
+                                                                    class_weights=class_weights,
                                                                     model_type="FC")
         
         # Save training time stop
@@ -209,11 +209,11 @@ if __name__ == "__main__" :
         LSTM Training
         '''
         # Training parameters
-        BATCH_SIZE = 10 # Batch size
+        BATCH_SIZE = 4 # Batch size
         EPOCHS = [999999]                      # Number of epochs
-        LEARNING_RATES = [0.001]     # Learning rates
+        LEARNING_RATES = [0.0004]     # Learning rates
         EARLY_STOPPING = True # Early stopping flag
-        PATIENCE = 15        # Early stopping patience
+        PATIENCE = 10        # Early stopping patience
         MIN_DELTA = 0.01     # Early stopping minimum delta
 
         DEBUG = False # Debug flag
@@ -280,7 +280,7 @@ if __name__ == "__main__" :
                                                                     MIN_DELTA,
                                                                     DEVICE,
                                                                     DEBUG,
-                                                                    # class_weights=class_weights,
+                                                                    class_weights=class_weights,
                                                                     model_type="LSTM")
         
         # Save training time stop
@@ -342,11 +342,11 @@ if __name__ == "__main__" :
     # weight[dataset.labels == 1] = 0.73
 
     #WeightedRandomSampler(weight,)
-    for i in range(10,11,1):
+    for i in range(50,51,1):
     # Training parameters
         BATCH_SIZE = i                                  # Batch sizes
         EPOCHS = [999999]                        # Number of epochs
-        LEARNING_RATES = [0.01]    # Learning rates
+        LEARNING_RATES = [0.001]    # Learning rates
         EARLY_STOPPING = True                           # Early stopping flag
         PATIENCE = 10                                   # Early stopping patience
         MIN_DELTA = 0.01                                # Early stopping minimum delta
@@ -431,7 +431,7 @@ if __name__ == "__main__" :
                                                                     MIN_DELTA,
                                                                     DEVICE,
                                                                     DEBUG,
-                                                                    # class_weights=class_weights,
+                                                                    class_weights=class_weights,
                                                                     model_type="CNN")
         
         # Save training time stop
