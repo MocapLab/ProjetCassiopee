@@ -11,7 +11,7 @@ class MocaplabDatasetLSTM(Dataset):
     PyTorch dataset for the Mocaplab dataset.
     """
 
-    def __init__(self, path, padding=True, train_test_ratio=8, validation_percentage=0.01, nb_samples=None, bones_to_keep=None):
+    def __init__(self, path, padding=True, train_test_ratio=8, validation_percentage=0.01, nb_samples=None, bones_to_keep=None, center=None):
         super().__init__()
         self.path = path
         self.padding = padding
@@ -26,6 +26,7 @@ class MocaplabDatasetLSTM(Dataset):
         self.data = None
         self.labels = None
         self.removed = []
+        self.center = center
 
         self._create_labels_dict()
         self._load_data()
@@ -40,7 +41,7 @@ class MocaplabDatasetLSTM(Dataset):
             self.y = [y for x,y in x_and_y]
     
     def read_csv(self, csv_file) :
-        data, self.header, self.bones_to_keep = mcl_read_csv(csv_file, self.bones_to_keep)
+        data, self.header, self.bones_to_keep = mcl_read_csv(csv_file, self.bones_to_keep, self.center)
         if data.shape[1]!=len(self.bones_to_keep)*6:
             ValueError(f"missing {set(self.bones_to_keep) - set(self.header)}, for {csv_file}")
         return data

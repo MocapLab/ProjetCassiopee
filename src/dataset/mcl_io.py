@@ -3,7 +3,7 @@ import numpy as np
 import os
 import pandas as pd
 
-def read_csv(csv_file, bones_to_keep=None):
+def read_csv(csv_file, bones_to_keep=None, center=None):
     data = []
     with open(csv_file, 'r') as file:
         csv_reader = csv.reader(file, delimiter=';')
@@ -32,6 +32,8 @@ def read_csv(csv_file, bones_to_keep=None):
                     data.append(values)
             n+=1
         data = np.stack(data)
+        if center:
+            data = data - center
     return data, out_header, bones_to_keep
 
 def load_data(path, class_dict, max_length=0, x=None, y=None, removed=None, col_num=3):
