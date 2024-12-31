@@ -143,6 +143,7 @@ def train_one_epoch(model, type, data_loader, loss_function, optimizer, device, 
         correct += weighted_batch_correct.sum().item()
 
         # Compute loss
+        loss_function.weight = torch.tensor(weight, dtype=torch.float).to(device)
         loss = loss_function(output, label.to(device).long())
 
         # Compute gradient loss
@@ -204,6 +205,7 @@ def evaluate(model, type, data_loader, loss_function, device, weight=[1.,1.]):
             correct += weighted_batch_correct.sum().item()
 
             # Compute loss
+            loss_function.weight = torch.tensor(weight, dtype=torch.float).to(device)
             loss = loss_function(output, label.cuda().long())
 
             # Update batch loss

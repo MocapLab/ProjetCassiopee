@@ -19,9 +19,9 @@ def read_csv(csv_file, bones_to_keep=None):
                 id = {}
                 for i, bone in enumerate(header_1):
                     bone_type = header_2[i]
-                    if bone not in id.keys() and bone in bones_to_keep and bone_type.startswith('T'):
+                    if bone not in id.keys() and bone.removesuffix('_glob') in bones_to_keep and ((bone_type.startswith('T') and bone_type.endswith('_glob')) or (bone_type.startswith('R') and not bone_type.endswith('_glob'))):
                         id[bone] = [i]
-                    elif bone in id.keys() and bone in bones_to_keep and bone_type.startswith('T'):
+                    elif bone in id.keys() and bone in bones_to_keep and ((bone_type.startswith('T') and bone_type.endswith('_glob')) or (bone_type.startswith('R') and not bone_type.endswith('_glob'))):
                         id[bone].extend([i])
             if n > 2:
                 values = []
