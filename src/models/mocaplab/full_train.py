@@ -31,7 +31,7 @@ if __name__ == "__main__" :
     DEVICE = setup_pytorch()
 
     # Dataset parameters
-
+    
     
     # '''
     # Fully connected Training
@@ -45,7 +45,7 @@ if __name__ == "__main__" :
     EPOCHS = [999999]                      # Number of epochs
     LEARNING_RATES = [0.01]     # Learning rates
     EARLY_STOPPING = True # Early stopping flag
-    PATIENCE = 60        # Early stopping patience
+    PATIENCE = 10        # Early stopping patience
     MIN_DELTA = 0.0005     # Early stopping minimum delta
 
     DEBUG = False # Debug flag
@@ -63,143 +63,144 @@ if __name__ == "__main__" :
     data_path = '%s/data/mocaplab/Autoannotation'%src_folder
     from src.dataset.mcl_io import read_csv as mcl_read_csv
     data, _,_ = mcl_read_csv(data_path + "/MLD_X0006_00003-00398-00686-1_CAM_V3.csv", bones_to_keep=bones_to_keep)
-    dataset = MocaplabDatasetFC(data_path, padding=True, bones_to_keep=bones_to_keep, center=data[0:1, :])
-    print(dataset)
-    
-    # print(dataset.get_labels_weights())
-    # Split dataset
-    n = len(dataset)
-    class_weights_dict = dataset.get_labels_weights() # inverse relative amount of samples per class
-    # sample_weights = [0] * n
-    class_weights = [class_weights_dict[label] for label in class_weights_dict.keys()]
-    # for idx in range(n):
-    #     (data, label, name) = dataset[idx]
-    #     sample_weights[idx] = class_weights_dict[label]
-
-    # sampler = WeightedRandomSampler(sample_weights, num_samples=len(sample_weights), replacement=True)
-
-    split = [int(n*0.8), int(n*0.1), int(n*0.1)]
-    diff = n - split[0] - split[1] - split[2]
-    train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[split[0], split[1], split[2]+diff], generator=generator)
-    #50% data
-    #diff = n - int(n*0.3) - int(n*0.2) - int(n*0.5)
-    #train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[int(n*0.15), int(n*0.1), int(n*0.75)+diff], generator=generator)
-    
-    #25% data
-    #diff = n - int(n*0.15) - int(n*0.1) - int(n*0.75)
-    #train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[int(n*0.15), int(n*0.1), int(n*0.75)+diff], generator=generator)
-    
-    #10% data
-    #diff = n - int(n*0.05) - int(n*0.05) - int(n*0.9)
-    #train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[int(n*0.05), int(n*0.05), int(n*0.90)+diff], generator=generator)
-    
-    print(f"Total length -> {len(dataset)} samples")
-    print(f"Train dataset -> {len(train_dataset)} samples")
-    print(f"Test dataset -> {len(test_dataset)} samples")
-    print(f"Validation dataset -> {len(validation_dataset)} samples")
-    
-    # Data loaders
-    print("#### FC Data Loaders ####")
-
-    train_data_loader = DataLoader(train_dataset,
-                                   batch_size=BATCH_SIZE,
-                                   shuffle=False)
-    
-    test_data_loader = DataLoader(test_dataset,
-                                  batch_size=BATCH_SIZE,
-                                  shuffle=False)
-    
-    validation_data_loader = DataLoader(validation_dataset,
-                                        batch_size=BATCH_SIZE,
-                                        shuffle=False)
-    
-    # Create neural network
-    print("#### FC Model ####")
-    model = MocaplabFC(dataset.max_length*dataset[0][0].shape[1], loss=LOSS_FUNCTION, numclass=2).to(DEVICE)
-    for param in model.fc1.parameters():
-        param.requires_grad = True
-    for param in model.fc2.parameters():
-        param.requires_grad = True
-    for param in model.fc3.parameters():
-        param.requires_grad = True
-    """state_dict = torch.load("self_supervised_learning/dev/ProjetCassiopee/data/mocaplab/Cassiopée_Allbones")
-    
-    flattened_state_dict = {}
-    for key, val in state_dict.items():
-        for sub_key, sub_val in val.items():
-            new_key = key + '.' + sub_key
-            flattened_state_dict[new_key] = sub_val
-    
-    model.load_state_dict(state_dict=flattened_state_dict)
-
-    # Désactiver le calcul du gradient pour tous les paramètres du modèle
-    for param in model.parameters():
-        param.requires_grad = False
-
-    # Activer le calcul du gradient pour les paramètres de fc1, fc2, fc3
-    for param in model.fc1.parameters():
-        param.requires_grad = True
-    #for param in model.fc2.parameters():
-    #    param.requires_grad = True
-    #for param in model.fc3.parameters():
-    #    param.requires_grad = True"""
-
-    #Save training time start
-    start_timestamp = datetime.now()
-
-    # Create path for saving the model and results
-    model_path = f"FC_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
-    #model_path = f"FC_50%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
-    #model_path = f"FC_25%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
-    #model_path = f"FC_10%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
-    #model_path = f"SSL_FC_10%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
-
-    # Begin training
-    print("#### FC Training ####")
-
-    #Train model
-    try:
-        train_acc, train_loss, val_acc, val_loss, run_epochs = train(model,
-                                                                    train_data_loader,
-                                                                    validation_data_loader,
-                                                                    LOSS_FUNCTION,
-                                                                    OPTIMIZER_TYPE,
-                                                                    EPOCHS,
-                                                                    LEARNING_RATES,
-                                                                    EARLY_STOPPING,
-                                                                    PATIENCE,
-                                                                    MIN_DELTA,
-                                                                    DEVICE,
-                                                                    DEBUG,
-                                                                    class_weights=class_weights,
-                                                                    model_type="FC")
+    for colnum in range(2,7):
+        dataset = MocaplabDatasetFC(data_path, padding=True, bones_to_keep=bones_to_keep, center=data[0:1, :], col_num=colnum)
+        print(dataset)
         
-        # Save training time stop
-        stop_timestamp = datetime.now()
-        
-        # Test model
-        
-        test_acc, test_confusion_matrix, misclassified = test(model, "FC",test_data_loader, DEVICE)
+        # print(dataset.get_labels_weights())
+        # Split dataset
+        n = len(dataset)
+        class_weights_dict = dataset.get_labels_weights() # inverse relative amount of samples per class
+        # sample_weights = [0] * n
+        class_weights = [class_weights_dict[label] for label in class_weights_dict.keys()]
+        # for idx in range(n):
+        #     (data, label, name) = dataset[idx]
+        #     sample_weights[idx] = class_weights_dict[label]
 
-        # Plot results
-        if test_acc > 0.8:
-            plot_results(train_acc, train_loss,
-                        val_acc, val_loss,
-                        run_epochs, type(model).__name__, start_timestamp, DEVICE,
-                        LOSS_FUNCTION, OPTIMIZER_TYPE,
-                        EPOCHS, LEARNING_RATES, EARLY_STOPPING, PATIENCE, MIN_DELTA,
-                        test_acc, test_confusion_matrix, stop_timestamp, model_path,
-                        [])
-                        #misclassified)
+        # sampler = WeightedRandomSampler(sample_weights, num_samples=len(sample_weights), replacement=True)
+
+        split = [int(n*0.8), int(n*0.1), int(n*0.1)]
+        diff = n - split[0] - split[1] - split[2]
+        train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[split[0], split[1], split[2]+diff], generator=generator)
+        #50% data
+        #diff = n - int(n*0.3) - int(n*0.2) - int(n*0.5)
+        #train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[int(n*0.15), int(n*0.1), int(n*0.75)+diff], generator=generator)
         
-        # Save model
-        if test_acc > 0.8:
-            torch.save(model.state_dict(), "%s/src/models/mocaplab/all/saved_models/FC/%s.ckpt"%(src_folder, model_path))
+        #25% data
+        #diff = n - int(n*0.15) - int(n*0.1) - int(n*0.75)
+        #train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[int(n*0.15), int(n*0.1), int(n*0.75)+diff], generator=generator)
         
-        #End training
-        print("#### FC End ####")
-    except Exception as e:
-        print(f"Error: {e}")
+        #10% data
+        #diff = n - int(n*0.05) - int(n*0.05) - int(n*0.9)
+        #train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[int(n*0.05), int(n*0.05), int(n*0.90)+diff], generator=generator)
+        
+        print(f"Total length -> {len(dataset)} samples")
+        print(f"Train dataset -> {len(train_dataset)} samples")
+        print(f"Test dataset -> {len(test_dataset)} samples")
+        print(f"Validation dataset -> {len(validation_dataset)} samples")
+        
+        # Data loaders
+        print("#### FC Data Loaders ####")
+
+        train_data_loader = DataLoader(train_dataset,
+                                    batch_size=BATCH_SIZE,
+                                    shuffle=False)
+        
+        test_data_loader = DataLoader(test_dataset,
+                                    batch_size=BATCH_SIZE,
+                                    shuffle=False)
+        
+        validation_data_loader = DataLoader(validation_dataset,
+                                            batch_size=BATCH_SIZE,
+                                            shuffle=False)
+        
+        # Create neural network
+        print("#### FC Model ####")
+        model = MocaplabFC(dataset.max_length*dataset[0][0].shape[1], loss=LOSS_FUNCTION, numclass=2).to(DEVICE)
+        for param in model.fc1.parameters():
+            param.requires_grad = True
+        for param in model.fc2.parameters():
+            param.requires_grad = True
+        for param in model.fc3.parameters():
+            param.requires_grad = True
+        """state_dict = torch.load("self_supervised_learning/dev/ProjetCassiopee/data/mocaplab/Cassiopée_Allbones")
+        
+        flattened_state_dict = {}
+        for key, val in state_dict.items():
+            for sub_key, sub_val in val.items():
+                new_key = key + '.' + sub_key
+                flattened_state_dict[new_key] = sub_val
+        
+        model.load_state_dict(state_dict=flattened_state_dict)
+
+        # Désactiver le calcul du gradient pour tous les paramètres du modèle
+        for param in model.parameters():
+            param.requires_grad = False
+
+        # Activer le calcul du gradient pour les paramètres de fc1, fc2, fc3
+        for param in model.fc1.parameters():
+            param.requires_grad = True
+        #for param in model.fc2.parameters():
+        #    param.requires_grad = True
+        #for param in model.fc3.parameters():
+        #    param.requires_grad = True"""
+
+        #Save training time start
+        start_timestamp = datetime.now()
+
+        # Create path for saving the model and results
+        model_path = f"FC_{colnum}_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
+        #model_path = f"FC_50%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
+        #model_path = f"FC_25%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
+        #model_path = f"FC_10%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
+        #model_path = f"SSL_FC_10%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
+
+        # Begin training
+        print("#### FC Training ####")
+
+        #Train model
+        try:
+            train_acc, train_loss, val_acc, val_loss, run_epochs = train(model,
+                                                                        train_data_loader,
+                                                                        validation_data_loader,
+                                                                        LOSS_FUNCTION,
+                                                                        OPTIMIZER_TYPE,
+                                                                        EPOCHS,
+                                                                        LEARNING_RATES,
+                                                                        EARLY_STOPPING,
+                                                                        PATIENCE,
+                                                                        MIN_DELTA,
+                                                                        DEVICE,
+                                                                        DEBUG,
+                                                                        class_weights=class_weights,
+                                                                        model_type="FC")
+            
+            # Save training time stop
+            stop_timestamp = datetime.now()
+            
+            # Test model
+            
+            test_acc, test_confusion_matrix, misclassified = test(model, "FC",test_data_loader, DEVICE)
+
+            # Plot results
+            if test_acc > 0.8:
+                plot_results(train_acc, train_loss,
+                            val_acc, val_loss,
+                            run_epochs, type(model).__name__, start_timestamp, DEVICE,
+                            LOSS_FUNCTION, OPTIMIZER_TYPE,
+                            EPOCHS, LEARNING_RATES, EARLY_STOPPING, PATIENCE, MIN_DELTA,
+                            test_acc, test_confusion_matrix, stop_timestamp, model_path,
+                            [])
+                            #misclassified)
+            
+            # Save model
+            if test_acc > 0.8:
+                torch.save(model.state_dict(), "%s/src/models/mocaplab/all/saved_models/FC/%s.ckpt"%(src_folder, model_path))
+            
+            #End training
+            print("#### FC End ####")
+        except Exception as e:
+            print(f"Error: {e}")
     
     
 
@@ -231,7 +232,8 @@ if __name__ == "__main__" :
         dataset = MocaplabDatasetLSTM(path=data_path,
                                       padding = True,
                                       bones_to_keep=bones_to_keep,
-                                      center=data[0:1,:])
+                                      center=data[0:1,:],
+                                      col_num=colnum)
 
         # Split dataset
         n = len(dataset)
@@ -338,7 +340,11 @@ if __name__ == "__main__" :
     '''
     print("#### CNN Datasets ####")
     #bones_to_keep = None
-    dataset = MocaplabDatasetCNN(data_path, padding=True, bones_to_keep=bones_to_keep, center=data[0:1, :])
+    dataset = MocaplabDatasetCNN(data_path, 
+                                 padding=True, 
+                                 bones_to_keep=bones_to_keep, 
+                                 center=data[0:1, :],
+                                 col_num=colnum)
     # Split dataset
     n = len(dataset)
     

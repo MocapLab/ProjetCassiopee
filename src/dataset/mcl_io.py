@@ -36,11 +36,11 @@ def read_csv(csv_file, bones_to_keep=None, center=None):
             data = data - center
     return data, out_header, bones_to_keep
 
-def load_data(path, class_dict, max_length=0, x=None, y=None, removed=None, col_num=5, bones_to_keep=None):
+def load_data(path, class_dict, max_length=0, x=None, y=None, removed=None, col_num=6, bones_to_keep=None):
     labels = pd.read_csv(os.path.join(path,
                                           "Annotation_gloses.csv"), sep="\t")
-    labels.dropna(inplace=True)
-    out_labels = {n: c for n, c in zip(labels.iloc[:,0], labels.iloc[:,col_num]) if os.path.exists(os.path.join(path,f"{n}.csv"))}
+    data_labels = labels.iloc[:,[0,col_num]].dropna(inplace=False)
+    out_labels = {n: c for n, c in zip(data_labels.iloc[:,0], data_labels.iloc[:,1]) if os.path.exists(os.path.join(path,f"{n}.csv"))}
     if x is None:
         x = []
     if y is None:

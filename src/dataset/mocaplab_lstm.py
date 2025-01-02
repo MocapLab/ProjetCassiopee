@@ -11,7 +11,7 @@ class MocaplabDatasetLSTM(Dataset):
     PyTorch dataset for the Mocaplab dataset.
     """
 
-    def __init__(self, path, padding=True, train_test_ratio=8, validation_percentage=0.01, nb_samples=None, bones_to_keep=None, center=None):
+    def __init__(self, path, padding=True, train_test_ratio=8, validation_percentage=0.01, nb_samples=None, bones_to_keep=None, center=None, col_num=6):
         super().__init__()
         self.path = path
         self.padding = padding
@@ -27,6 +27,7 @@ class MocaplabDatasetLSTM(Dataset):
         self.labels = None
         self.removed = []
         self.center = center
+        self.col_num = col_num
 
         self._create_labels_dict()
         self._load_data()
@@ -52,15 +53,14 @@ class MocaplabDatasetLSTM(Dataset):
     def _create_labels_dict(self):
         labels = pd.read_csv(os.path.join(self.path,
                                           "Annotation_gloses.csv"), sep="\t")
-        labels.dropna(inplace=True)
-        unique_val = labels.iloc[:,1].unique()
+        unique_val = labels.iloc[:,self.col_num].dropna(inplace=False).unique()
         self.class_dict = {}
         for i, val in enumerate(unique_val[::-1]):
             self.class_dict[val] = i
         return self.class_dict
     
     def _load_data(self):
-        self.labels, self.max_length, self.x, self.y, self.removed, self.header, self.bones_to_keep = mcl_load_data(self.path, self.class_dict, self.max_length, self.x, self.y, self.removed, bones_to_keep=self.bones_to_keep)
+        self.labels, self.max_length, self.x, self.y, self.removed, self.header, self.bones_to_keep = mcl_load_data(self.path, self.class_dict, self.max_length, self.x, self.y, self.removed, bones_to_keep=self.bones_to_keep, col_num=self.col_num)
 
     def __getitem__(self, idx):
         label = self.y[idx]
