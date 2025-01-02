@@ -3,9 +3,9 @@ import torch.nn as nn
 class MocaplabFC(nn.Module):
     def __init__(self, input_size, numclass=2, loss=nn.CrossEntropyLoss()) :
         super().__init__()
-        self.fc1 = nn.Linear(input_size, 32)
-        self.fc2 = nn.Linear(32, 64)
-        self.fc3 = nn.Linear(64, numclass)
+        self.fc1 = nn.Linear(input_size, 128)
+        self.fc2 = nn.Linear(128, 256)
+        self.fc3 = nn.Linear(256, numclass)
         self.relu = nn.ReLU()
         self.sigmoid = nn.Sigmoid()
         self.softmax = nn.Softmax(dim = 1)

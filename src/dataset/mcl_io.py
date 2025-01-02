@@ -32,11 +32,11 @@ def read_csv(csv_file, bones_to_keep=None, center=None):
                     data.append(values)
             n+=1
         data = np.stack(data)
-        if center:
+        if center is not None:
             data = data - center
     return data, out_header, bones_to_keep
 
-def load_data(path, class_dict, max_length=0, x=None, y=None, removed=None, col_num=3):
+def load_data(path, class_dict, max_length=0, x=None, y=None, removed=None, col_num=3, bones_to_keep=None):
     labels = pd.read_csv(os.path.join(path,
                                           "Annotation_gloses.csv"), sep="\t")
     labels.dropna(inplace=True)
@@ -58,7 +58,7 @@ def load_data(path, class_dict, max_length=0, x=None, y=None, removed=None, col_
             y.append(class_dict[label])
 
             # Retrieve max length
-            data, out_header, bones_to_keep = read_csv(os.path.join(path, filename))
+            data, out_header, bones_to_keep = read_csv(os.path.join(path, filename), bones_to_keep=bones_to_keep)
             length = len(data)
             if length > max_length:
                 max_length = length

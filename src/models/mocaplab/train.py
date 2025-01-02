@@ -58,12 +58,12 @@ def train(
                     train_accuracies.append(train_accuracy)
                     train_losses.append(train_loss)
             else:
-                train_accuracy, train_loss = train_one_epoch(model,model_type, train_data_loader, loss_function, optimizer, device, class_weights)
+                train_accuracy, train_loss = train_one_epoch(model, model_type, train_data_loader, loss_function, optimizer, device, class_weights)
                 train_accuracies.append(train_accuracy)
                 train_losses.append(train_loss)
 
             # Evaluate model
-            validation_accuracy, validation_loss = evaluate(model,model_type, validation_data_loader, loss_function, device, class_weights)
+            validation_accuracy, validation_loss = evaluate(model, model_type, validation_data_loader, loss_function, device, class_weights)
             
             validation_accuracies.append(validation_accuracy)
             validation_losses.append(validation_loss)
@@ -136,11 +136,13 @@ def train_one_epoch(model, type, data_loader, loss_function, optimizer, device, 
         _, predicted = torch.max(output.data, dim=1)
 
         total += len(label)
-        weight_t = torch.clone(label)
-        for i_lab in range(len(label)):
-            weight_t[i_lab] = weight[int(label[i_lab].item())]
-        weighted_batch_correct = (predicted == label) * weight_t
-        correct += weighted_batch_correct.sum().item()
+        correct += (predicted == label).sum().item()
+        weighted_batch_correct = (predicted == label)
+        # weight_t = torch.clone(label)
+        # for i_lab in range(len(label)):
+        #     weight_t[i_lab] = weight[int(label[i_lab].item())]
+        # weighted_batch_correct = (predicted == label) * weight_t
+        # correct += weighted_batch_correct.sum().item()
 
         # Compute loss
         loss_function.weight = torch.tensor(weight, dtype=torch.float).to(device)
@@ -176,7 +178,7 @@ def evaluate(model, type, data_loader, loss_function, device, weight=[1.,1.]):
     validation_loss = 0.0
 
     # Freeze the model
-    model.eval()
+    model.train(False)
     with torch.no_grad():
 
         # Iterate over batches
@@ -198,12 +200,13 @@ def evaluate(model, type, data_loader, loss_function, device, weight=[1.,1.]):
             # Update accuracy variables
             _, predicted = torch.max(output.data, dim=1)
             total += len(label)
-            weight_t = torch.clone(label)
-            for i_lab in range(len(label)):
-                weight_t[i_lab] = weight[int(label[i_lab].item())]
-            weighted_batch_correct = (predicted == label) * weight_t
-            correct += weighted_batch_correct.sum().item()
-
+            batch_correct = (predicted == label).sum().item()
+            # weight_t = torch.clone(label)
+            # for i_lab in range(len(label)):
+            #     weight_t[i_lab] = weight[int(label[i_lab].item())]
+            # weighted_batch_correct = (predicted == label) * weight_t
+            # correct += weighted_batch_correct.sum().item()
+            correct += batch_correct
             # Compute loss
             loss_function.weight = torch.tensor(weight, dtype=torch.float).to(device)
             loss = loss_function(output, label.cuda().long())
@@ -253,11 +256,13 @@ def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[1.,1
             _, predicted = torch.max(output.data, dim=1)
 
             total += len(label)
-            weight_t = torch.clone(label)
-            for i_lab in range(len(label)):
-                weight_t[i_lab] = weight[int(label[i_lab].item())]
-            weighted_batch_correct = (predicted == label) * weight_t
-            correct += weighted_batch_correct.sum().item()
+            correct += (predicted == label).sum().item()
+            weighted_batch_correct = (predicted == label)
+            # weight_t = torch.clone(label)
+            # for i_lab in range(len(label)):
+            #     weight_t[i_lab] = weight[int(label[i_lab].item())]
+            # weighted_batch_correct = (predicted == label) * weight_t
+            # correct += weighted_batch_correct.sum().item()
 
             for k in range(len(label)) :
                 if label[k]!=predicted[k] :

@@ -68,8 +68,10 @@ def train_one_epoch(model, data_loader, loss_function, optimizer, loss_mmodality
             _, predicted = torch.max(output.data, 1)
             total += len(label)
             batch_correct = (predicted == label).sum().item()
-            weighted_batch_correct = (predicted == label) * torch.tensor(weight)[label]
-            correct += weighted_batch_correct.sum().item()
+            # weighted_batch_correct = (predicted == label) * torch.tensor(weight)[label]
+            # correct += weighted_batch_correct.sum().item()
+            correct += batch_correct
+            weighted_batch_correct = batch_correct
 
         # Compute loss
         loss = loss_function(output, batch[loss_mmodality])
@@ -245,8 +247,8 @@ def test(model, test_data_loader):
 
             # Update confusion matrix variables
             if all_label is None and all_predicted is None:
-                all_label = label.detach().clone()
-                all_predicted = predicted.detach().clone()
+                all_label = label.clone().detach()
+                all_predicted = predicted.clone().detach()
             else:
                 all_label = torch.cat((all_label, label))
                 all_predicted = torch.cat((all_predicted, predicted))

@@ -66,7 +66,7 @@ class MocaplabDatasetFC(Dataset):
         return self.class_dict
     
     def _load_data(self):
-        self.labels, self.max_length, self.x, self.y, self.removed, self.header, self.bones_to_keep = mcl_load_data(self.path, self.class_dict, self.max_length, self.x, self.y, self.removed)
+        self.labels, self.max_length, self.x, self.y, self.removed, self.header, self.bones_to_keep = mcl_load_data(self.path, self.class_dict, self.max_length, self.x, self.y, self.removed, bones_to_keep=self.bones_to_keep)
 
     def __getitem__(self, idx):
         label = self.y[idx]

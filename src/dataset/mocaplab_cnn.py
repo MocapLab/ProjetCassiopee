@@ -12,7 +12,7 @@ class MocaplabDatasetCNN(Dataset):
     PyTorch dataset for the Mocaplab dataset.
     """
 
-    def __init__(self, path, padding=True, train_test_ratio=8, validation_percentage=0.01, nb_samples=None, bones_to_keep=None):
+    def __init__(self, path, padding=True, train_test_ratio=8, validation_percentage=0.01, nb_samples=None, bones_to_keep=None, center=None):
         super().__init__()
         self.path = path
         self.padding = padding
@@ -21,6 +21,7 @@ class MocaplabDatasetCNN(Dataset):
         self.bones_to_keep = bones_to_keep
         self.class_dict = None
         self.max_length = 0
+        self.center = center
         self.header = None
         self.x = []
         self.y = []
@@ -40,7 +41,7 @@ class MocaplabDatasetCNN(Dataset):
             self.y = [y for x,y in x_and_y]
     
     def read_csv(self, csv_file) :
-        data, self.header, self.bones_to_keep = mcl_read_csv(csv_file, self.bones_to_keep)
+        data, self.header, self.bones_to_keep = mcl_read_csv(csv_file, self.bones_to_keep, center=self.center)
         if data.shape[1]!=len(self.bones_to_keep)*6:
             ValueError(f"missing {set(self.bones_to_keep) - set(self.header)}, for {csv_file}")
         return data
@@ -59,7 +60,7 @@ class MocaplabDatasetCNN(Dataset):
         return self.class_dict
     
     def _load_data(self):
-        self.labels, self.max_length, self.x, self.y, self.removed, self.header, self.bones_to_keep = mcl_load_data(self.path, self.class_dict, self.max_length, self.x, self.y, self.removed)
+        self.labels, self.max_length, self.x, self.y, self.removed, self.header, self.bones_to_keep = mcl_load_data(self.path, self.class_dict, self.max_length, self.x, self.y, self.removed, bones_to_keep=self.bones_to_keep)
 
     def __getitem__(self, idx):
         label = self.y[idx]
