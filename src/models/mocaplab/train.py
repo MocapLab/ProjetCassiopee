@@ -109,6 +109,9 @@ def train_one_epoch(model, type, data_loader, loss_function, optimizer, device, 
 
     # Initialise loss
     train_loss = 0.0
+    num_classes = 2
+    class_correct = [0 for _ in range(num_classes)]
+    class_total = [0 for _ in range(num_classes)]
 
     # Pass over all batches
     for i, batch in enumerate(data_loader):
@@ -135,14 +138,20 @@ def train_one_epoch(model, type, data_loader, loss_function, optimizer, device, 
         # Update accuracy variables
         _, predicted = torch.max(output.data, dim=1)
 
-        total += len(label)
-        correct += (predicted == label).sum().item()
-        weighted_batch_correct = (predicted == label)
-        # weight_t = torch.clone(label)
-        # for i_lab in range(len(label)):
-        #     weight_t[i_lab] = weight[int(label[i_lab].item())]
-        # weighted_batch_correct = (predicted == label) * weight_t
-        # correct += weighted_batch_correct.sum().item()
+        # total += len(label)
+        # correct += (predicted == label).sum().item()
+        # weighted_batch_correct = (predicted == label)
+        weight_t = torch.clone(label)
+        for i_lab in range(len(label)):
+            weight_t[i_lab] = weight[int(label[i_lab].item())]
+        weighted_batch_correct = (predicted == label) * weight_t
+        for i_lab in range(len(label)):
+            class_idx = int(label[i_lab].item())
+            class_correct[class_idx] += weighted_batch_correct[i_lab].item()
+            class_total[class_idx] += weight_t[i_lab].item()
+        
+        correct += weighted_batch_correct.sum().item()
+        total += ((label == label) * weight_t).sum().item()
 
         # Compute loss
         loss_function.weight = torch.tensor(weight, dtype=torch.float).to(device)
@@ -160,10 +169,11 @@ def train_one_epoch(model, type, data_loader, loss_function, optimizer, device, 
         # Log
         if i % 5 == 0:
             # Batch loss
-            print(f"    Batch {i:8}: accuracy={weighted_batch_correct.sum().item() / label.size(0):.4f} | loss={loss:.4f}")
+            print(f"    Batch {i:8}: accuracy={weighted_batch_correct.sum().item() / total:.4f} | loss={loss:.4f}")
 
     # Compute validation accuracy and loss
     train_accuracy = correct / total
+    train_accuracy = sum([class_correct[i] / class_total[i]*weight[i] if class_total[i] != 0 else 0 for i in range(num_classes)])
     train_loss /= (i + 1) # Average loss over all batches of the epoch
     
     return train_accuracy, train_loss
@@ -179,6 +189,10 @@ def evaluate(model, type, data_loader, loss_function, device, weight=[1.,1.]):
 
     # Freeze the model
     model.train(False)
+    num_classes=2
+    class_correct = [0 for _ in range(num_classes)]
+    class_total = [0 for _ in range(num_classes)]
+
     with torch.no_grad():
 
         # Iterate over batches
@@ -199,14 +213,21 @@ def evaluate(model, type, data_loader, loss_function, device, weight=[1.,1.]):
                 output = model(data_flattened)
             # Update accuracy variables
             _, predicted = torch.max(output.data, dim=1)
-            total += len(label)
-            batch_correct = (predicted == label).sum().item()
-            # weight_t = torch.clone(label)
-            # for i_lab in range(len(label)):
-            #     weight_t[i_lab] = weight[int(label[i_lab].item())]
-            # weighted_batch_correct = (predicted == label) * weight_t
-            # correct += weighted_batch_correct.sum().item()
-            correct += batch_correct
+            # total += len(label)
+            # batch_correct = (predicted == label).sum().item()
+            weight_t = torch.clone(label)
+            for i_lab in range(len(label)):
+                weight_t[i_lab] = weight[int(label[i_lab].item())]
+            weighted_batch_correct = (predicted == label) * weight_t
+            for i_lab in range(len(label)):
+                class_idx = int(label[i_lab].item())
+                class_correct[class_idx] += weighted_batch_correct[i_lab].item()
+                class_total[class_idx] += weight_t[i_lab].item()
+            
+            correct += weighted_batch_correct.sum().item()
+            total += ((label == label) * weight_t).sum().item()
+            
+            # correct += batch_correct
             # Compute loss
             loss_function.weight = torch.tensor(weight, dtype=torch.float).to(device)
             loss = loss_function(output, label.cuda().long())
@@ -217,6 +238,7 @@ def evaluate(model, type, data_loader, loss_function, device, weight=[1.,1.]):
     # Compute validation accuracy and loss
     if total != 0:
         validation_accuracy = correct / total
+        validation_accuracy = sum([class_correct[i] / class_total[i]*weight[i] if class_total[i] != 0 else 0 for i in range(num_classes)])
         validation_loss /= (i + 1)      # Average loss over all batches of the epoch
     else :
         validation_accuracy = 0
@@ -234,6 +256,9 @@ def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[1.,1
     all_predicted = None
 
     misclassified = []
+    num_classes = 2
+    class_correct = [0 for _ in range(num_classes)]
+    class_total = [0 for _ in range(num_classes)]
     model.eval()
     with torch.no_grad():
         for i, batch in enumerate(test_data_loader):
@@ -255,14 +280,20 @@ def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[1.,1
             # Update accuracy variables
             _, predicted = torch.max(output.data, dim=1)
 
-            total += len(label)
-            correct += (predicted == label).sum().item()
-            weighted_batch_correct = (predicted == label)
-            # weight_t = torch.clone(label)
-            # for i_lab in range(len(label)):
-            #     weight_t[i_lab] = weight[int(label[i_lab].item())]
-            # weighted_batch_correct = (predicted == label) * weight_t
-            # correct += weighted_batch_correct.sum().item()
+            # total += len(label)
+            # correct += (predicted == label).sum().item()
+            # weighted_batch_correct = (predicted == label)
+            weight_t = torch.clone(label)
+            for i_lab in range(len(label)):
+                weight_t[i_lab] = weight[int(label[i_lab].item())]
+            weighted_batch_correct = (predicted == label) * weight_t
+            for i_lab in range(len(label)):
+                class_idx = int(label[i_lab].item())
+                class_correct[class_idx] += weighted_batch_correct[i_lab].item()
+                class_total[class_idx] += weight_t[i_lab].item()
+
+            correct += weighted_batch_correct.sum().item()
+            total += ((label == label) * weight_t).sum().item()
 
             for k in range(len(label)) :
                 if label[k]!=predicted[k] :
@@ -278,6 +309,7 @@ def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[1.,1
             
     # Compute test accuracy
     test_accuracy = correct / total
+    test_accuracy = sum([class_correct[i] / class_total[i]*weight[i] if class_total[i] != 0 else 0 for i in range(num_classes)])
 
     # Create "confusion matrix"
     test_confusion_matrix = confusion_matrix(all_label.cpu(), all_predicted.cpu())
