@@ -15,7 +15,7 @@ sys.path.append(src_folder)
 from src.dataset import MocaplabDatasetCNN
 from src.setup import setup_python, setup_pytorch
 from src.models.mocaplab import TestCNN
-
+from src.dataset.mcl_io import read_csv as mcl_read_csv
 
 def create_images(i, data, label, prediction, nom, heatmap, size):
 
@@ -337,20 +337,23 @@ def create_all_animations(results_dir="train_results/mocaplab/supervised"):
     setup_python()
 
     # Set-up PyTorch
-    DEVICE = setup_pytorch(gpu=False)
-
+    DEVICE = setup_pytorch(gpu=True)
+    data_path = '%s/data/mocaplab/Autoannotation'%src_folder
     print("#### Dataset ####")
     # dataset_fc = MocaplabDatasetFC(path=(f"{src_folder}/data/mocaplab/Cassiopée_Allbones"),
     #                             padding=True, 
     #                             train_test_ratio=8,
     #                             validation_percentage=0.01)
     # bones_to_keep = "abdomenUpper_T_glob;abdomenUpper_T_glob;abdomenUpper_T_glob;chestLower_T_glob;chestLower_T_glob;chestLower_T_glob;chestUpper_T_glob;chestUpper_T_glob;chestUpper_T_glob;neckLower_T_glob;neckLower_T_glob;neckLower_T_glob;rCollar_T_glob;rCollar_T_glob;rCollar_T_glob;rShldrBend_T_glob;rShldrBend_T_glob;rShldrBend_T_glob;rShldrTwist_T_glob;rShldrTwist_T_glob;rShldrTwist_T_glob;rForearmBend_T_glob;rForearmBend_T_glob;rForearmBend_T_glob;rForearmTwist_T_glob;rForearmTwist_T_glob;rForearmTwist_T_glob;rHand_T_glob;rHand_T_glob;rHand_T_glob;rCarpal4_T_glob;rCarpal4_T_glob;rCarpal4_T_glob;rPinky1_T_glob;rPinky1_T_glob;rPinky1_T_glob;rPinky2_T_glob;rPinky2_T_glob;rPinky2_T_glob;rPinky3_T_glob;rPinky3_T_glob;rPinky3_T_glob;rPinky3_end_T_glob;rPinky3_end_T_glob;rPinky3_end_T_glob;rCarpal3_T_glob;rCarpal3_T_glob;rCarpal3_T_glob;rRing1_T_glob;rRing1_T_glob;rRing1_T_glob;rRing2_T_glob;rRing2_T_glob;rRing2_T_glob;rRing3_T_glob;rRing3_T_glob;rRing3_T_glob;rRing3_end_T_glob;rRing3_end_T_glob;rRing3_end_T_glob;rCarpal2_T_glob;rCarpal2_T_glob;rCarpal2_T_glob;rMid1_T_glob;rMid1_T_glob;rMid1_T_glob;rMid2_T_glob;rMid2_T_glob;rMid2_T_glob;rMid3_T_glob;rMid3_T_glob;rMid3_T_glob;rMid3_end_T_glob;rMid3_end_T_glob;rMid3_end_T_glob;rCarpal1_T_glob;rCarpal1_T_glob;rCarpal1_T_glob;rIndex1_T_glob;rIndex1_T_glob;rIndex1_T_glob;rIndex2_T_glob;rIndex2_T_glob;rIndex2_T_glob;rIndex3_T_glob;rIndex3_T_glob;rIndex3_T_glob;rIndex3_end_T_glob;rIndex3_end_T_glob;rIndex3_end_T_glob;rThumb1_T_glob;rThumb1_T_glob;rThumb1_T_glob;rThumb2_T_glob;rThumb2_T_glob;rThumb2_T_glob;rThumb3_T_glob;rThumb3_T_glob;rThumb3_T_glob;rThumb3_end_T_glob;rThumb3_end_T_glob;rThumb3_end_T_glob;lCollar_T_glob;lCollar_T_glob;lCollar_T_glob;lShldrBend_T_glob;lShldrBend_T_glob;lShldrBend_T_glob;lShldrTwist_T_glob;lShldrTwist_T_glob;lShldrTwist_T_glob;lForearmBend_T_glob;lForearmBend_T_glob;lForearmBend_T_glob;lForearmTwist_T_glob;lForearmTwist_T_glob;lForearmTwist_T_glob;lHand_T_glob;lHand_T_glob;lHand_T_glob;lCarpal4_T_glob;lCarpal4_T_glob;lCarpal4_T_glob;lPinky1_T_glob;lPinky1_T_glob;lPinky1_T_glob;lPinky2_T_glob;lPinky2_T_glob;lPinky2_T_glob;lPinky3_T_glob;lPinky3_T_glob;lPinky3_T_glob;lPinky3_end_T_glob;lPinky3_end_T_glob;lPinky3_end_T_glob;lCarpal3_T_glob;lCarpal3_T_glob;lCarpal3_T_glob;lRing1_T_glob;lRing1_T_glob;lRing1_T_glob;lRing2_T_glob;lRing2_T_glob;lRing2_T_glob;lRing3_T_glob;lRing3_T_glob;lRing3_T_glob;lRing3_end_T_glob;lRing3_end_T_glob;lRing3_end_T_glob;lCarpal2_T_glob;lCarpal2_T_glob;lCarpal2_T_glob;lMid1_T_glob;lMid1_T_glob;lMid1_T_glob;lMid2_T_glob;lMid2_T_glob;lMid2_T_glob;lMid3_T_glob;lMid3_T_glob;lMid3_T_glob;lMid3_end_T_glob;lMid3_end_T_glob;lMid3_end_T_glob;lCarpal1_T_glob;lCarpal1_T_glob;lCarpal1_T_glob;lIndex1_T_glob;lIndex1_T_glob;lIndex1_T_glob;lIndex2_T_glob;lIndex2_T_glob;lIndex2_T_glob;lIndex3_T_glob;lIndex3_T_glob;lIndex3_T_glob;lIndex3_end_T_glob;lIndex3_end_T_glob;lIndex3_end_T_glob;lThumb1_T_glob;lThumb1_T_glob;lThumb1_T_glob;lThumb2_T_glob;lThumb2_T_glob;lThumb2_T_glob;lThumb3_T_glob;lThumb3_T_glob;lThumb3_T_glob;lThumb3_end_T_glob;lThumb3_end_T_glob;lThumb3_end_T_glob".split(';')
-    bones_to_keep = list(set("UPHD;UPHD;UPHD;LFHD;LFHD;LFHD;RFHD;RFHD;RFHD;LBHD;LBHD;LBHD;RBHD;RBHD;RBHD;C7;C7;C7;T10;T10;T10;LBAC;LBAC;LBAC;RBAC;RBAC;RBAC;CLAV;CLAV;CLAV;STRN;STRN;STRN;LCLAV;LCLAV;LCLAV;RCLAV;RCLAV;RCLAV;LFSHO;LFSHO;LFSHO;LSHOULD;LSHOULD;LSHOULD;LBSHO;LBSHO;LBSHO;LUPA;LUPA;LUPA;LELB;LELB;LELB;LELBEXT;LELBEXT;LELBEXT;LFRM;LFRM;LFRM;LWRA;LWRA;LWRA;LWRB;LWRB;LWRB;RFSHO;RFSHO;RFSHO;RSHOULD;RSHOULD;RSHOULD;RBSHO;RBSHO;RBSHO;RUPA;RUPA;RUPA;RELB;RELB;RELB;RELBEXT;RELBEXT;RELBEXT;RFRM;RFRM;RFRM;RWRA;RWRA;RWRA;RWRB;RWRB;RWRB;LFWT;LFWT;LFWT;RFWT;RFWT;RFWT;LBWT;LBWT;LBWT;RBWT;RBWT;RBWT;LHIP;LHIP;LHIP;LUPLEG;LUPLEG;LUPLEG;LKNE;LKNE;LKNE;LPER;LPER;LPER;LTIB;LTIB;LTIB;LANK;LANK;LANK;LHEE;LHEE;LHEE;LMT5;LMT5;LMT5;LTOE;LTOE;LTOE;LMT1;LMT1;LMT1;RHIP;RHIP;RHIP;RUPLEG;RUPLEG;RUPLEG;RKNE;RKNE;RKNE;RPER;RPER;RPER;RTIB;RTIB;RTIB;RANK;RANK;RANK;RHEE;RHEE;RHEE;RMT5;RMT5;RMT5;RTOE;RTOE;RTOE;RMT1;RMT1;RMT1".split(';')))
+    # bones_to_keep = list(set("UPHD;UPHD;UPHD;LFHD;LFHD;LFHD;RFHD;RFHD;RFHD;LBHD;LBHD;LBHD;RBHD;RBHD;RBHD;C7;C7;C7;T10;T10;T10;LBAC;LBAC;LBAC;RBAC;RBAC;RBAC;CLAV;CLAV;CLAV;STRN;STRN;STRN;LCLAV;LCLAV;LCLAV;RCLAV;RCLAV;RCLAV;LFSHO;LFSHO;LFSHO;LSHOULD;LSHOULD;LSHOULD;LBSHO;LBSHO;LBSHO;LUPA;LUPA;LUPA;LELB;LELB;LELB;LELBEXT;LELBEXT;LELBEXT;LFRM;LFRM;LFRM;LWRA;LWRA;LWRA;LWRB;LWRB;LWRB;RFSHO;RFSHO;RFSHO;RSHOULD;RSHOULD;RSHOULD;RBSHO;RBSHO;RBSHO;RUPA;RUPA;RUPA;RELB;RELB;RELB;RELBEXT;RELBEXT;RELBEXT;RFRM;RFRM;RFRM;RWRA;RWRA;RWRA;RWRB;RWRB;RWRB;LFWT;LFWT;LFWT;RFWT;RFWT;RFWT;LBWT;LBWT;LBWT;RBWT;RBWT;RBWT;LHIP;LHIP;LHIP;LUPLEG;LUPLEG;LUPLEG;LKNE;LKNE;LKNE;LPER;LPER;LPER;LTIB;LTIB;LTIB;LANK;LANK;LANK;LHEE;LHEE;LHEE;LMT5;LMT5;LMT5;LTOE;LTOE;LTOE;LMT1;LMT1;LMT1;RHIP;RHIP;RHIP;RUPLEG;RUPLEG;RUPLEG;RKNE;RKNE;RKNE;RPER;RPER;RPER;RTIB;RTIB;RTIB;RANK;RANK;RANK;RHEE;RHEE;RHEE;RMT5;RMT5;RMT5;RTOE;RTOE;RTOE;RMT1;RMT1;RMT1".split(';')))
+    bones_to_keep = ['CC_Base_Head', 'CC_Base_L_Clavicle', 'CC_Base_L_Upperarm', 'CC_Base_L_UpperarmTwist02', 'CC_Base_NeckTwist01', 'CC_Base_NeckTwist02', 'CC_Base_R_Clavicle', 'CC_Base_R_Upperarm', 'CC_Base_R_UpperarmTwist02', 'CC_Base_Spine01', 'CC_Base_Spine02', 'CC_Base_Waist', 'C_Base_NeckTwist01', 'hand_l', 'hand_r', 'index_01_l', 'index_01_r', 'index_02_l', 'index_02_r', 'index_03_l', 'index_03_r', 'index_metacarpal_l', 'index_metacarpal_r', 'lowerarm_l', 'lowerarm_r', 'lowerarm_twist_01_l', 'lowerarm_twist_01_r', 'middle_01_l', 'middle_01_r', 'middle_02_l', 'middle_02_r', 'middle_03_l', 'middle_03_r', 'middle_metacarpal_l', 'middle_metacarpal_r', 'pinky_01_l', 'pinky_01_r', 'pinky_02_l', 'pinky_02_r', 'pinky_03_l', 'pinky_03_r', 'pinky_metacarpal_l', 'pinky_metacarpal_r', 'ring_01_l', 'ring_01_r', 'ring_02_l', 'ring_02_r', 'ring_03_l', 'ring_03_r', 'ring_metacarpal_l', 'ring_metacarpal_r', 'thumb_01_l', 'thumb_01_r', 'thumb_02_l', 'thumb_02_r', 'thumb_03_l', 'thumb_03_r']
+    data, _,_ = mcl_read_csv(data_path + "/MLD_X0006_00003-00398-00686-1_CAM_V3.csv", bones_to_keep=bones_to_keep)
     
-    dataset_cnn = MocaplabDatasetCNN(path=(f"{src_folder}/data/mocaplab/LSDICOS"),
+    data_neutal = data[0:1,:]
+    dataset_cnn = MocaplabDatasetCNN(path=(f"{src_folder}/data/mocaplab/AutoAnnotation"),
                                 padding=True, 
                                 train_test_ratio=8,
-                                validation_percentage=0.01, bones_to_keep=bones_to_keep)
+                                validation_percentage=0.01, bones_to_keep=bones_to_keep, center=data_neutal, col_num=6)
     print("#### Data Loader ####")
     # data_loader_fc = DataLoader(dataset_fc,
     #                          batch_size=1,
@@ -375,8 +378,8 @@ def create_all_animations(results_dir="train_results/mocaplab/supervised"):
     cnn = TestCNN()
 
     # Load the trained weights cnn old model
-    cnn.load_state_dict(torch.load((f"{src_folder}/src/models/mocaplab/all/saved_models/CNN/CNN_20240614_193233.ckpt"),
-                                    map_location=torch.device("cpu")))
+    cnn.load_state_dict(torch.load((f"{src_folder}/src/models/mocaplab/all/saved_models/CNN/CNN_à X mains_20250103_112951.ckpt"),
+                                    map_location=torch.device("cuda:0")))
 
     # Load the trained weights cnn new model
     #cnn.load_state_dict(torch.load(("/home/self_supervised_learning_gr/self_supervised_learning/dev/ProjetCassiopee/src/models/mocaplab/cnn/saved_models/CNN_20240514_211739.ckpt"),

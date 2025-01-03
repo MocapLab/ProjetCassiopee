@@ -17,6 +17,7 @@ from fc.fc import MocaplabFC
 from src.dataset import MocaplabDatasetLSTM
 from lstm.lstm import LSTM
 from src.setup import setup_python, setup_pytorch
+from src.dataset.mcl_io import read_csv as mcl_read_csv
 
 
 if __name__ == "__main__" :
@@ -52,19 +53,21 @@ if __name__ == "__main__" :
 
     generator = torch.Generator()
     generator.manual_seed(0)
+    data_path = '%s/data/mocaplab/Autoannotation'%src_folder
+    bones_to_keep = ['CC_Base_Head', 'CC_Base_L_Clavicle', 'CC_Base_L_Upperarm', 'CC_Base_L_UpperarmTwist02', 'CC_Base_NeckTwist01', 'CC_Base_NeckTwist02', 'CC_Base_R_Clavicle', 'CC_Base_R_Upperarm', 'CC_Base_R_UpperarmTwist02', 'CC_Base_Spine01', 'CC_Base_Spine02', 'CC_Base_Waist', 'C_Base_NeckTwist01', 'hand_l', 'hand_r', 'index_01_l', 'index_01_r', 'index_02_l', 'index_02_r', 'index_03_l', 'index_03_r', 'index_metacarpal_l', 'index_metacarpal_r', 'lowerarm_l', 'lowerarm_r', 'lowerarm_twist_01_l', 'lowerarm_twist_01_r', 'middle_01_l', 'middle_01_r', 'middle_02_l', 'middle_02_r', 'middle_03_l', 'middle_03_r', 'middle_metacarpal_l', 'middle_metacarpal_r', 'pinky_01_l', 'pinky_01_r', 'pinky_02_l', 'pinky_02_r', 'pinky_03_l', 'pinky_03_r', 'pinky_metacarpal_l', 'pinky_metacarpal_r', 'ring_01_l', 'ring_01_r', 'ring_02_l', 'ring_02_r', 'ring_03_l', 'ring_03_r', 'ring_metacarpal_l', 'ring_metacarpal_r', 'thumb_01_l', 'thumb_01_r', 'thumb_02_l', 'thumb_02_r', 'thumb_03_l', 'thumb_03_r']
+    data, _,_ = mcl_read_csv(data_path + "/MLD_X0006_00003-00398-00686-1_CAM_V3.csv", bones_to_keep=bones_to_keep)
     
+    data_neutal = data[0:1,:]
     # # Datasets
     print("#### FC Datasets ####")
     # # bones_to_keep = "abdomenUpper_T_glob;abdomenUpper_T_glob;abdomenUpper_T_glob;chestLower_T_glob;chestLower_T_glob;chestLower_T_glob;chestUpper_T_glob;chestUpper_T_glob;chestUpper_T_glob;neckLower_T_glob;neckLower_T_glob;neckLower_T_glob;rCollar_T_glob;rCollar_T_glob;rCollar_T_glob;rShldrBend_T_glob;rShldrBend_T_glob;rShldrBend_T_glob;rShldrTwist_T_glob;rShldrTwist_T_glob;rShldrTwist_T_glob;rForearmBend_T_glob;rForearmBend_T_glob;rForearmBend_T_glob;rForearmTwist_T_glob;rForearmTwist_T_glob;rForearmTwist_T_glob;rHand_T_glob;rHand_T_glob;rHand_T_glob;rCarpal4_T_glob;rCarpal4_T_glob;rCarpal4_T_glob;rPinky1_T_glob;rPinky1_T_glob;rPinky1_T_glob;rPinky2_T_glob;rPinky2_T_glob;rPinky2_T_glob;rPinky3_T_glob;rPinky3_T_glob;rPinky3_T_glob;rPinky3_end_T_glob;rPinky3_end_T_glob;rPinky3_end_T_glob;rCarpal3_T_glob;rCarpal3_T_glob;rCarpal3_T_glob;rRing1_T_glob;rRing1_T_glob;rRing1_T_glob;rRing2_T_glob;rRing2_T_glob;rRing2_T_glob;rRing3_T_glob;rRing3_T_glob;rRing3_T_glob;rRing3_end_T_glob;rRing3_end_T_glob;rRing3_end_T_glob;rCarpal2_T_glob;rCarpal2_T_glob;rCarpal2_T_glob;rMid1_T_glob;rMid1_T_glob;rMid1_T_glob;rMid2_T_glob;rMid2_T_glob;rMid2_T_glob;rMid3_T_glob;rMid3_T_glob;rMid3_T_glob;rMid3_end_T_glob;rMid3_end_T_glob;rMid3_end_T_glob;rCarpal1_T_glob;rCarpal1_T_glob;rCarpal1_T_glob;rIndex1_T_glob;rIndex1_T_glob;rIndex1_T_glob;rIndex2_T_glob;rIndex2_T_glob;rIndex2_T_glob;rIndex3_T_glob;rIndex3_T_glob;rIndex3_T_glob;rIndex3_end_T_glob;rIndex3_end_T_glob;rIndex3_end_T_glob;rThumb1_T_glob;rThumb1_T_glob;rThumb1_T_glob;rThumb2_T_glob;rThumb2_T_glob;rThumb2_T_glob;rThumb3_T_glob;rThumb3_T_glob;rThumb3_T_glob;rThumb3_end_T_glob;rThumb3_end_T_glob;rThumb3_end_T_glob;lCollar_T_glob;lCollar_T_glob;lCollar_T_glob;lShldrBend_T_glob;lShldrBend_T_glob;lShldrBend_T_glob;lShldrTwist_T_glob;lShldrTwist_T_glob;lShldrTwist_T_glob;lForearmBend_T_glob;lForearmBend_T_glob;lForearmBend_T_glob;lForearmTwist_T_glob;lForearmTwist_T_glob;lForearmTwist_T_glob;lHand_T_glob;lHand_T_glob;lHand_T_glob;lCarpal4_T_glob;lCarpal4_T_glob;lCarpal4_T_glob;lPinky1_T_glob;lPinky1_T_glob;lPinky1_T_glob;lPinky2_T_glob;lPinky2_T_glob;lPinky2_T_glob;lPinky3_T_glob;lPinky3_T_glob;lPinky3_T_glob;lPinky3_end_T_glob;lPinky3_end_T_glob;lPinky3_end_T_glob;lCarpal3_T_glob;lCarpal3_T_glob;lCarpal3_T_glob;lRing1_T_glob;lRing1_T_glob;lRing1_T_glob;lRing2_T_glob;lRing2_T_glob;lRing2_T_glob;lRing3_T_glob;lRing3_T_glob;lRing3_T_glob;lRing3_end_T_glob;lRing3_end_T_glob;lRing3_end_T_glob;lCarpal2_T_glob;lCarpal2_T_glob;lCarpal2_T_glob;lMid1_T_glob;lMid1_T_glob;lMid1_T_glob;lMid2_T_glob;lMid2_T_glob;lMid2_T_glob;lMid3_T_glob;lMid3_T_glob;lMid3_T_glob;lMid3_end_T_glob;lMid3_end_T_glob;lMid3_end_T_glob;lCarpal1_T_glob;lCarpal1_T_glob;lCarpal1_T_glob;lIndex1_T_glob;lIndex1_T_glob;lIndex1_T_glob;lIndex2_T_glob;lIndex2_T_glob;lIndex2_T_glob;lIndex3_T_glob;lIndex3_T_glob;lIndex3_T_glob;lIndex3_end_T_glob;lIndex3_end_T_glob;lIndex3_end_T_glob;lThumb1_T_glob;lThumb1_T_glob;lThumb1_T_glob;lThumb2_T_glob;lThumb2_T_glob;lThumb2_T_glob;lThumb3_T_glob;lThumb3_T_glob;lThumb3_T_glob;lThumb3_end_T_glob;lThumb3_end_T_glob;lThumb3_end_T_glob".split(';')
 
     # bones_to_keep = list(set("C7;C7;C7;T10;T10;T10;LBAC;LBAC;LBAC;RBAC;RBAC;RBAC;CLAV;CLAV;CLAV;STRN;STRN;STRN;LCLAV;LCLAV;LCLAV;RCLAV;RCLAV;RCLAV;LFSHO;LFSHO;LFSHO;LSHOULD;LSHOULD;LSHOULD;LBSHO;LBSHO;LBSHO;LUPA;LUPA;LUPA;LELB;LELB;LELB;LELBEXT;LELBEXT;LELBEXT;LFRM;LFRM;LFRM;LWRA;LWRA;LWRA;LWRB;LWRB;LWRB;RFSHO;RFSHO;RFSHO;RSHOULD;RSHOULD;RSHOULD;RBSHO;RBSHO;RBSHO;RUPA;RUPA;RUPA;RELB;RELB;RELB;RELBEXT;RELBEXT;RELBEXT;RFRM;RFRM;RFRM;RWRA;RWRA;RWRA;RWRB;RWRB;RWRB;LFWT;LFWT;LFWT;RFWT;RFWT;RFWT;LBWT;LBWT;LBWT;RBWT;RBWT;RBWT".split(';')))
-    bones_to_keep = list(set("CC_Base_Waist;CC_Base_Waist;CC_Base_Waist;CC_Base_Waist;CC_Base_Waist;CC_Base_Waist;CC_Base_Spine01;CC_Base_Spine01;CC_Base_Spine01;CC_Base_Spine01;CC_Base_Spine01;CC_Base_Spine01;CC_Base_Spine02;CC_Base_Spine02;CC_Base_Spine02;CC_Base_Spine02;CC_Base_Spine02;CC_Base_Spine02;CC_Base_R_Clavicle;CC_Base_R_Clavicle;CC_Base_R_Clavicle;CC_Base_R_Clavicle;CC_Base_R_Clavicle;CC_Base_R_Clavicle;CC_Base_R_Upperarm;CC_Base_R_Upperarm;CC_Base_R_Upperarm;CC_Base_R_Upperarm;CC_Base_R_Upperarm;CC_Base_R_Upperarm;CC_Base_R_UpperarmTwist02;CC_Base_R_UpperarmTwist02;CC_Base_R_UpperarmTwist02;CC_Base_R_UpperarmTwist02;CC_Base_R_UpperarmTwist02;CC_Base_R_UpperarmTwist02;CC_Base_L_Clavicle;CC_Base_L_Clavicle;CC_Base_L_Clavicle;CC_Base_L_Clavicle;CC_Base_L_Clavicle;CC_Base_L_Clavicle;CC_Base_L_Upperarm;CC_Base_L_Upperarm;CC_Base_L_Upperarm;CC_Base_L_Upperarm;CC_Base_L_Upperarm;CC_Base_L_Upperarm;CC_Base_L_UpperarmTwist02;CC_Base_L_UpperarmTwist02;CC_Base_L_UpperarmTwist02;CC_Base_L_UpperarmTwist02;CC_Base_L_UpperarmTwist02;CC_Base_L_UpperarmTwist02;C_Base_NeckTwist01;CC_Base_NeckTwist01;CC_Base_NeckTwist01;CC_Base_NeckTwist01;CC_Base_NeckTwist01;CC_Base_NeckTwist01;CC_Base_NeckTwist02;CC_Base_NeckTwist02;CC_Base_NeckTwist02;CC_Base_NeckTwist02;CC_Base_NeckTwist02;CC_Base_NeckTwist02;CC_Base_Head;CC_Base_Head;CC_Base_Head;CC_Base_Head;CC_Base_Head;CC_Base_Head;lowerarm_l;lowerarm_l;lowerarm_l;lowerarm_l;lowerarm_l;lowerarm_l;lowerarm_twist_01_l;lowerarm_twist_01_l;lowerarm_twist_01_l;lowerarm_twist_01_l;lowerarm_twist_01_l;lowerarm_twist_01_l;hand_l;hand_l;hand_l;hand_l;hand_l;hand_l;lowerarm_r;lowerarm_r;lowerarm_r;lowerarm_r;lowerarm_r;lowerarm_r;lowerarm_twist_01_r;lowerarm_twist_01_r;lowerarm_twist_01_r;lowerarm_twist_01_r;lowerarm_twist_01_r;lowerarm_twist_01_r;hand_r;hand_r;hand_r;hand_r;hand_r;hand_r;index_metacarpal_r;index_metacarpal_r;index_metacarpal_r;index_metacarpal_r;index_metacarpal_r;index_metacarpal_r;index_01_r;index_01_r;index_01_r;index_01_r;index_01_r;index_01_r;index_02_r;index_02_r;index_02_r;index_02_r;index_02_r;index_02_r;index_03_r;index_03_r;index_03_r;index_03_r;index_03_r;index_03_r;middle_metacarpal_r;middle_metacarpal_r;middle_metacarpal_r;middle_metacarpal_r;middle_metacarpal_r;middle_metacarpal_r;middle_01_r;middle_01_r;middle_01_r;middle_01_r;middle_01_r;middle_01_r;middle_02_r;middle_02_r;middle_02_r;middle_02_r;middle_02_r;middle_02_r;middle_03_r;middle_03_r;middle_03_r;middle_03_r;middle_03_r;middle_03_r;thumb_01_r;thumb_01_r;thumb_01_r;thumb_01_r;thumb_01_r;thumb_01_r;thumb_02_r;thumb_02_r;thumb_02_r;thumb_02_r;thumb_02_r;thumb_02_r;thumb_03_r;thumb_03_r;thumb_03_r;thumb_03_r;thumb_03_r;thumb_03_r;ring_metacarpal_r;ring_metacarpal_r;ring_metacarpal_r;ring_metacarpal_r;ring_metacarpal_r;ring_metacarpal_r;ring_01_r;ring_01_r;ring_01_r;ring_01_r;ring_01_r;ring_01_r;ring_02_r;ring_02_r;ring_02_r;ring_02_r;ring_02_r;ring_02_r;ring_03_r;ring_03_r;ring_03_r;ring_03_r;ring_03_r;ring_03_r;pinky_metacarpal_r;pinky_metacarpal_r;pinky_metacarpal_r;pinky_metacarpal_r;pinky_metacarpal_r;pinky_metacarpal_r;pinky_01_r;pinky_01_r;pinky_01_r;pinky_01_r;pinky_01_r;pinky_01_r;pinky_02_r;pinky_02_r;pinky_02_r;pinky_02_r;pinky_02_r;pinky_02_r;pinky_03_r;pinky_03_r;pinky_03_r;pinky_03_r;pinky_03_r;pinky_03_r;index_metacarpal_l;index_metacarpal_l;index_metacarpal_l;index_metacarpal_l;index_metacarpal_l;index_metacarpal_l;index_01_l;index_01_l;index_01_l;index_01_l;index_01_l;index_01_l;index_02_l;index_02_l;index_02_l;index_02_l;index_02_l;index_02_l;index_03_l;index_03_l;index_03_l;index_03_l;index_03_l;index_03_l;middle_metacarpal_l;middle_metacarpal_l;middle_metacarpal_l;middle_metacarpal_l;middle_metacarpal_l;middle_metacarpal_l;middle_01_l;middle_01_l;middle_01_l;middle_01_l;middle_01_l;middle_01_l;middle_02_l;middle_02_l;middle_02_l;middle_02_l;middle_02_l;middle_02_l;middle_03_l;middle_03_l;middle_03_l;middle_03_l;middle_03_l;middle_03_l;thumb_01_l;thumb_01_l;thumb_01_l;thumb_01_l;thumb_01_l;thumb_01_l;thumb_02_l;thumb_02_l;thumb_02_l;thumb_02_l;thumb_02_l;thumb_02_l;thumb_03_l;thumb_03_l;thumb_03_l;thumb_03_l;thumb_03_l;thumb_03_l;ring_metacarpal_l;ring_metacarpal_l;ring_metacarpal_l;ring_metacarpal_l;ring_metacarpal_l;ring_metacarpal_l;ring_01_l;ring_01_l;ring_01_l;ring_01_l;ring_01_l;ring_01_l;ring_02_l;ring_02_l;ring_02_l;ring_02_l;ring_02_l;ring_02_l;ring_03_l;ring_03_l;ring_03_l;ring_03_l;ring_03_l;ring_03_l;pinky_metacarpal_l;pinky_metacarpal_l;pinky_metacarpal_l;pinky_metacarpal_l;pinky_metacarpal_l;pinky_metacarpal_l;pinky_01_l;pinky_01_l;pinky_01_l;pinky_01_l;pinky_01_l;pinky_01_l;pinky_02_l;pinky_02_l;pinky_02_l;pinky_02_l;pinky_02_l;pinky_02_l;pinky_03_l;pinky_03_l;pinky_03_l;pinky_03_l;pinky_03_l;pinky_03_l".split(';')))
-    # bones_to_keep = list(set("CC_Base_Waist;CC_Base_Waist;CC_Base_Waist;CC_Base_Waist;CC_Base_Waist;CC_Base_Waist;CC_Base_Spine01;CC_Base_Spine01;CC_Base_Spine01;CC_Base_Spine01;CC_Base_Spine01;CC_Base_Spine01;CC_Base_Spine02;CC_Base_Spine02;CC_Base_Spine02;CC_Base_Spine02;CC_Base_Spine02;CC_Base_Spine02;CC_Base_R_Clavicle;CC_Base_R_Clavicle;CC_Base_R_Clavicle;CC_Base_R_Clavicle;CC_Base_R_Clavicle;CC_Base_R_Clavicle;CC_Base_R_Upperarm;CC_Base_R_Upperarm;CC_Base_R_Upperarm;CC_Base_R_Upperarm;CC_Base_R_Upperarm;CC_Base_R_Upperarm;CC_Base_R_UpperarmTwist02;CC_Base_R_UpperarmTwist02;CC_Base_R_UpperarmTwist02;CC_Base_R_UpperarmTwist02;CC_Base_R_UpperarmTwist02;CC_Base_R_UpperarmTwist02;CC_Base_L_Clavicle;CC_Base_L_Clavicle;CC_Base_L_Clavicle;CC_Base_L_Clavicle;CC_Base_L_Clavicle;CC_Base_L_Clavicle;CC_Base_L_Upperarm;CC_Base_L_Upperarm;CC_Base_L_Upperarm;CC_Base_L_Upperarm;CC_Base_L_Upperarm;CC_Base_L_Upperarm;CC_Base_L_UpperarmTwist02;CC_Base_L_UpperarmTwist02;CC_Base_L_UpperarmTwist02;CC_Base_L_UpperarmTwist02;CC_Base_L_UpperarmTwist02;CC_Base_L_UpperarmTwist02;C_Base_NeckTwist01;CC_Base_NeckTwist01;CC_Base_NeckTwist01;CC_Base_NeckTwist01;CC_Base_NeckTwist01;CC_Base_NeckTwist01;CC_Base_NeckTwist02;CC_Base_NeckTwist02;CC_Base_NeckTwist02;CC_Base_NeckTwist02;CC_Base_NeckTwist02;CC_Base_NeckTwist02;CC_Base_Head;CC_Base_Head;CC_Base_Head;CC_Base_Head;CC_Base_Head;CC_Base_Head;lowerarm_l;lowerarm_l;lowerarm_l;lowerarm_l;lowerarm_l;lowerarm_l;lowerarm_twist_01_l;lowerarm_twist_01_l;lowerarm_twist_01_l;lowerarm_twist_01_l;lowerarm_twist_01_l;lowerarm_twist_01_l;hand_l;hand_l;hand_l;hand_l;hand_l;hand_l;lowerarm_r;lowerarm_r;lowerarm_r;lowerarm_r;lowerarm_r;lowerarm_r;lowerarm_twist_01_r;lowerarm_twist_01_r;lowerarm_twist_01_r;lowerarm_twist_01_r;lowerarm_twist_01_r;lowerarm_twist_01_r;hand_r;hand_r;hand_r;hand_r;hand_r;hand_r".split(';')))
-    data_path = '%s/data/mocaplab/Autoannotation'%src_folder
-    from src.dataset.mcl_io import read_csv as mcl_read_csv
-    data, _,_ = mcl_read_csv(data_path + "/MLD_X0006_00003-00398-00686-1_CAM_V3.csv", bones_to_keep=bones_to_keep)
-    for colnum in range(2,7):
-        dataset = MocaplabDatasetFC(data_path, padding=True, bones_to_keep=bones_to_keep, center=data[0:1, :], col_num=colnum)
+    
+    
+    
+    for colnum in range(6,0,-1):
+        dataset = MocaplabDatasetFC(data_path, padding=True, bones_to_keep=bones_to_keep, center=data_neutal, col_num=colnum, max_length=1736)
         print(dataset)
         
         # print(dataset.get_labels_weights())
@@ -149,7 +152,7 @@ if __name__ == "__main__" :
         start_timestamp = datetime.now()
 
         # Create path for saving the model and results
-        model_path = f"FC_{colnum}_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
+        model_path = f"FC_{dataset.col_name}_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
         #model_path = f"FC_50%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
         #model_path = f"FC_25%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
         #model_path = f"FC_10%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
@@ -232,7 +235,7 @@ if __name__ == "__main__" :
         dataset = MocaplabDatasetLSTM(path=data_path,
                                       padding = True,
                                       bones_to_keep=bones_to_keep,
-                                      center=data[0:1,:],
+                                      center=data_neutal,
                                       col_num=colnum)
 
         # Split dataset
@@ -340,36 +343,53 @@ if __name__ == "__main__" :
     '''
     print("#### CNN Datasets ####")
     #bones_to_keep = None
-    dataset = MocaplabDatasetCNN(data_path, 
-                                 padding=True, 
-                                 bones_to_keep=bones_to_keep, 
-                                 center=data[0:1, :],
-                                 col_num=colnum)
-    # Split dataset
-    n = len(dataset)
-    
-    train_dataset = Subset(dataset, train_dataset.indices)
-    validation_dataset = Subset(dataset, validation_dataset.indices)
-    test_dataset = Subset(dataset, test_dataset.indices)
-    from collections import defaultdict
+    for colnum in range(6,0,-1):
+        dataset = MocaplabDatasetCNN(data_path, 
+                                    padding=True, 
+                                    bones_to_keep=bones_to_keep, 
+                                    center=data_neutal,
+                                    col_num=colnum,
+                                    max_length=1736)
+        print(dataset.get_labels_weights())
+        # Split dataset
+        n = len(dataset)
+        class_weights_dict = dataset.get_labels_weights() # inverse relative amount of samples per class
+        # sample_weights = [0] * n
+        class_weights = [class_weights_dict[label] for label in class_weights_dict.keys()]
+        # for idx in range(n):
+        #     (data, label, name) = dataset[idx]
+        #     sample_weights[idx] = class_weights_dict[label]
 
-    label_counter = defaultdict(int)
+        # sampler = WeightedRandomSampler(sample_weights, num_samples=len(sample_weights), replacement=True)
 
-    for data, label, name in train_dataset:
-        label_counter[label] += 1
-    print(label_counter)
-    # weight = [0]*n
-    # weight[dataset.labels == 0] = 0.27
-    # weight[dataset.labels == 1] = 0.73
+        split = [int(n*0.8), int(n*0.1), int(n*0.1)]
+        diff = n - split[0] - split[1] - split[2]
+        train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[split[0], split[1], split[2]+diff], generator=generator)
 
-    #WeightedRandomSampler(weight,)
-    for i in range(20,21,1):
-    # Training parameters
-        BATCH_SIZE = i                                  # Batch sizes
+        # Split dataset
+        n = len(dataset)
+        
+        train_dataset = Subset(dataset, train_dataset.indices)
+        validation_dataset = Subset(dataset, validation_dataset.indices)
+        test_dataset = Subset(dataset, test_dataset.indices)
+        from collections import defaultdict
+
+        label_counter = defaultdict(int)
+
+        for data, label, name in train_dataset:
+            label_counter[label] += 1
+        print(label_counter)
+        # weight = [0]*n
+        # weight[dataset.labels == 0] = 0.27
+        # weight[dataset.labels == 1] = 0.73
+
+        #WeightedRandomSampler(weight,)
+        # Training parameters
+        BATCH_SIZE = 20                                  # Batch sizes
         EPOCHS = [999999]                        # Number of epochs
-        LEARNING_RATES = [0.001]    # Learning rates
+        LEARNING_RATES = [0.005]    # Learning rates
         EARLY_STOPPING = True                           # Early stopping flag
-        PATIENCE = 40                                   # Early stopping patience
+        PATIENCE = 60                                   # Early stopping patience
         MIN_DELTA = 0.005                                # Early stopping minimum delta
 
         DEBUG = False                                   # Debug flag
@@ -442,7 +462,7 @@ if __name__ == "__main__" :
         start_timestamp = datetime.now()
 
         # Create path for saving things...
-        model_path = f"CNN_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
+        model_path = f"CNN_{dataset.col_name}_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
         #model_path = f"CNN_50%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
         #model_path = f"CNN_25%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
         #model_path = f"CNN_10%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"

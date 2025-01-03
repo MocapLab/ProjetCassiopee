@@ -12,7 +12,7 @@ class MocaplabDatasetCNN(Dataset):
     PyTorch dataset for the Mocaplab dataset.
     """
 
-    def __init__(self, path, padding=True, train_test_ratio=8, validation_percentage=0.01, nb_samples=None, bones_to_keep=None, center=None, col_num=6):
+    def __init__(self, path, padding=True, train_test_ratio=8, validation_percentage=0.01, nb_samples=None, bones_to_keep=None, center=None, col_num=6, max_length=0):
         super().__init__()
         self.path = path
         self.padding = padding
@@ -20,7 +20,7 @@ class MocaplabDatasetCNN(Dataset):
         self.validation_percentage = validation_percentage
         self.bones_to_keep = bones_to_keep
         self.class_dict = None
-        self.max_length = 0
+        self.max_length = max_length
         self.center = center
         self.header = None
         self.x = []
@@ -54,6 +54,7 @@ class MocaplabDatasetCNN(Dataset):
         labels = pd.read_csv(os.path.join(self.path,
                                           "Annotation_gloses.csv"), sep="\t")
         unique_val = labels.iloc[:,self.col_num].dropna(inplace=False).unique()
+        self.col_name = labels.columns[self.col_num]
         self.class_dict = {}
         for i, val in enumerate(unique_val[::-1]):
             self.class_dict[val] = i
@@ -85,12 +86,16 @@ class MocaplabDatasetCNN(Dataset):
     
         return data, label, self.x[idx]
     
+    def get_labels_weights(self):
+        from collections import Counter
+        return {i: j/len(self.y) for i,j in zip(Counter(self.y).keys(),Counter(self.y).values())}
+    
 class MocaplabDatatestsetCNN(Dataset):
     """
     PyTorch dataset for the Mocaplab dataset.
     """
 
-    def __init__(self, path, padding=True, train_test_ratio=8, validation_percentage=0.01, nb_samples=None, bones_to_keep=None):
+    def __init__(self, path, padding=True, train_test_ratio=8, validation_percentage=0.01, nb_samples=None, bones_to_keep=None, center=None, col_num=6):
         super().__init__()
         self.path = path
         self.padding = padding
@@ -102,6 +107,8 @@ class MocaplabDatatestsetCNN(Dataset):
         self.header = None
         self.x = []
         self.y = []
+        self.center = center
+        self.col_num = col_num
         self.labels = None
         self.removed = []
 
@@ -117,18 +124,19 @@ class MocaplabDatatestsetCNN(Dataset):
             self.y = [y for x,y in x_and_y]
     
     def read_csv(self, csv_file) :
-        data, self.header, self.bones_to_keep = mcl_read_csv(csv_file, self.bones_to_keep)
+        data, self.header, self.bones_to_keep = mcl_read_csv(csv_file, self.bones_to_keep, center=self.center)
         if data.shape[1]!=len(self.bones_to_keep)*6:
             ValueError(f"missing {set(self.bones_to_keep) - set(self.header)}, for {csv_file}")
         return data
 
     def __len__(self):
-        return len(self.y)
+        return len(self.x)
     
     def _create_labels_dict(self):
         labels = pd.read_csv(os.path.join(self.path,
                                           "Annotation_gloses.csv"), sep="\t")
-        unique_val = labels.iloc[:, 1].unique()
+        unique_val = labels.iloc[:, self.col_num].unique()
+        self.col_name = labels.columns[self.col_num]
         self.class_dict = {}
         for i, val in enumerate(unique_val):
             self.class_dict[val] = i
@@ -136,34 +144,17 @@ class MocaplabDatatestsetCNN(Dataset):
     
     def _load_data(self):
         # Retrieve labels
-        labels = pd.read_csv(os.path.join(self.path,
-                                          "Annotation_gloses.csv"), sep="\t")
-        self.labels = {n: c for n, c in zip(labels.iloc[:,0], labels.iloc[:,1]) if os.path.exists(os.path.join(self.path,f"{n}.csv"))}
-        
-        # Retrieve files
-        files = os.listdir(self.path)
-        for name, label in self.labels.items():
-            filename = name + ".csv"
-            if filename not in files:
-                self.removed.append(filename)
-            else:
-                self.x.append(filename)
-                if pd.isna(label):
-                    self.y.append(-1)
-                else:
-                    self.y.append(self.class_dict[label])
-
-                # Retrieve max length
-                data = self.read_csv(os.path.join(self.path, filename))
-                length = len(data)
-                if length > self.max_length:
-                    self.max_length = length
+        files = [i for i in os.listdir(self.path) if ("Annotation_gloses" not in i)]
+        for file in files:
+            self.x.append(file)
+            # print(f"file {file}")
+            with open(os.path.join(self.path, file)) as f:
+                self.max_length = max(self.max_length, len(f.readlines())-2)
 
     def __getitem__(self, idx):
         data_path = os.path.join(self.path, self.x[idx])
 
         data = self.read_csv(data_path)
-        label = self.y[idx]
 
         if self.padding:
             data = data.tolist()
@@ -178,7 +169,7 @@ class MocaplabDatatestsetCNN(Dataset):
         data = np.expand_dims(data, axis=0)
         
     
-        return data, label, self.x[idx]
+        return data, self.x[idx]
     
     def get_labels_weights(self):
         from collections import Counter

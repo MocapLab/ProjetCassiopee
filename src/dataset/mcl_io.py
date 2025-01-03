@@ -3,8 +3,10 @@ import numpy as np
 import os
 import pandas as pd
 
-def read_csv(csv_file, bones_to_keep=None, center=None):
+def read_csv(csv_file, bones_to_keep=None, center=None, debug=False):
     data = []
+    if debug:
+        print(f"Reading {csv_file}")
     with open(csv_file, 'r') as file:
         csv_reader = csv.reader(file, delimiter=';')
         n = 0
