@@ -152,7 +152,7 @@ if __name__ == "__main__" :
         start_timestamp = datetime.now()
 
         # Create path for saving the model and results
-        model_path = f"FC_{dataset.col_name}_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
+        model_path = f"FC_bigger_{dataset.col_name}_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
         #model_path = f"FC_50%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
         #model_path = f"FC_25%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
         #model_path = f"FC_10%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"

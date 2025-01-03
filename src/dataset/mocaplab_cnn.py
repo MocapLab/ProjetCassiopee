@@ -144,7 +144,7 @@ class MocaplabDatatestsetCNN(Dataset):
     
     def _load_data(self):
         # Retrieve labels
-        files = [i for i in os.listdir(self.path) if ("Annotation_gloses" not in i)]
+        files = [i for i in os.listdir(self.path) if ("Annotation_gloses" not in i) or i.startswith("L")]
         for file in files:
             self.x.append(file)
             # print(f"file {file}")
