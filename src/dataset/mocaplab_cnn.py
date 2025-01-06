@@ -54,6 +54,7 @@ class MocaplabDatasetCNN(Dataset):
         labels = pd.read_csv(os.path.join(self.path,
                                           "Annotation_gloses.csv"), sep="\t")
         unique_val = labels.iloc[:,self.col_num].dropna(inplace=False).unique()
+        unique_val.sort()
         self.col_name = labels.columns[self.col_num]
         self.class_dict = {}
         for i, val in enumerate(unique_val[::-1]):
@@ -76,7 +77,7 @@ class MocaplabDatasetCNN(Dataset):
             data = np.stack(data)
         
         data = im.fromarray(data)
-        data = data.resize((256, 256))
+        data = data.resize((512, 512))
 
         data = np.array(data)
         data = np.expand_dims(data, axis=0)

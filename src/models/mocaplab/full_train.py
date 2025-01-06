@@ -66,7 +66,7 @@ if __name__ == "__main__" :
     
     
     
-    for colnum in range(6,0,-1):
+    for colnum in range(14,0,-1):
         dataset = MocaplabDatasetFC(data_path, padding=True, bones_to_keep=bones_to_keep, center=data_neutal, col_num=colnum, max_length=1736)
         print(dataset)
         
@@ -216,116 +216,116 @@ if __name__ == "__main__" :
 
 
 
-    try:
-        '''
-        LSTM Training
-        '''
-        # Training parameters
-        BATCH_SIZE = 10 # Batch size
-        EPOCHS = [999999]                      # Number of epochs
-        LEARNING_RATES = [0.01]     # Learning rates
-        EARLY_STOPPING = True # Early stopping flag
-        PATIENCE = 20        # Early stopping patience
-        MIN_DELTA = 0.001     # Early stopping minimum delta
+    # try:
+    #     '''
+    #     LSTM Training
+    #     '''
+    #     # Training parameters
+    #     BATCH_SIZE = 10 # Batch size
+    #     EPOCHS = [999999]                      # Number of epochs
+    #     LEARNING_RATES = [0.01]     # Learning rates
+    #     EARLY_STOPPING = True # Early stopping flag
+    #     PATIENCE = 20        # Early stopping patience
+    #     MIN_DELTA = 0.001     # Early stopping minimum delta
 
-        DEBUG = False # Debug flag
+    #     DEBUG = False # Debug flag
         
-        # Datasets
-        print("#### LSTM Datasets ####")
-        dataset = MocaplabDatasetLSTM(path=data_path,
-                                      padding = True,
-                                      bones_to_keep=bones_to_keep,
-                                      center=data_neutal,
-                                      col_num=colnum)
+    #     # Datasets
+    #     print("#### LSTM Datasets ####")
+    #     dataset = MocaplabDatasetLSTM(path=data_path,
+    #                                   padding = True,
+    #                                   bones_to_keep=bones_to_keep,
+    #                                   center=data_neutal,
+    #                                   col_num=colnum)
 
-        # Split dataset
-        n = len(dataset)
+    #     # Split dataset
+    #     n = len(dataset)
 
-        train_dataset = Subset(dataset, train_dataset.indices)
-        validation_dataset = Subset(dataset, validation_dataset.indices)
-        test_dataset = Subset(dataset, test_dataset.indices)
+    #     train_dataset = Subset(dataset, train_dataset.indices)
+    #     validation_dataset = Subset(dataset, validation_dataset.indices)
+    #     test_dataset = Subset(dataset, test_dataset.indices)
         
-        print(f"Total length -> {len(dataset)} samples")
-        print(f"Train dataset -> {len(train_dataset)} samples")
-        print(f"Test dataset -> {len(test_dataset)} samples")
-        print(f"Validation dataset -> {len(validation_dataset)} samples")
+    #     print(f"Total length -> {len(dataset)} samples")
+    #     print(f"Train dataset -> {len(train_dataset)} samples")
+    #     print(f"Test dataset -> {len(test_dataset)} samples")
+    #     print(f"Validation dataset -> {len(validation_dataset)} samples")
         
-        # Data loaders
-        print("#### LSTM Data Loaders ####")
+    #     # Data loaders
+    #     print("#### LSTM Data Loaders ####")
 
-        train_data_loader = DataLoader(train_dataset,
-                                    batch_size=BATCH_SIZE,
-                                    shuffle=False)
+    #     train_data_loader = DataLoader(train_dataset,
+    #                                 batch_size=BATCH_SIZE,
+    #                                 shuffle=False)
         
-        test_data_loader = DataLoader(test_dataset,
-                                    batch_size=BATCH_SIZE,
-                                    shuffle=False)
+    #     test_data_loader = DataLoader(test_dataset,
+    #                                 batch_size=BATCH_SIZE,
+    #                                 shuffle=False)
         
-        validation_data_loader = DataLoader(validation_dataset,
-                                            batch_size=BATCH_SIZE,
-                                            shuffle=False)
+    #     validation_data_loader = DataLoader(validation_dataset,
+    #                                         batch_size=BATCH_SIZE,
+    #                                         shuffle=False)
         
-        # Create neural network
-        print("#### LSTM Model ####")
-        model = LSTM(input_size=dataset[0][0].shape[1], hidden_size=48, num_layers=10, output_size=2).to(DEVICE)
-        for param in model.fc1.parameters():
-            param.requires_grad = True
-        for param in model.fc2.parameters():
-            param.requires_grad = True
-        for param in model.lstm.parameters():
-            param.requires_grad = True
-        # Save training time start
-        start_timestamp = datetime.now()
+    #     # Create neural network
+    #     print("#### LSTM Model ####")
+    #     model = LSTM(input_size=dataset[0][0].shape[1], hidden_size=48, num_layers=10, output_size=2).to(DEVICE)
+    #     for param in model.fc1.parameters():
+    #         param.requires_grad = True
+    #     for param in model.fc2.parameters():
+    #         param.requires_grad = True
+    #     for param in model.lstm.parameters():
+    #         param.requires_grad = True
+    #     # Save training time start
+    #     start_timestamp = datetime.now()
 
-        # Create path for saving things...
-        model_path = f"LSTM_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
-        #model_path = f"LSTM_50%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
-        #model_path = f"LSTM_25%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
-        #model_path = f"LSTM_10%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
+    #     # Create path for saving things...
+    #     model_path = f"LSTM_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
+    #     #model_path = f"LSTM_50%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
+    #     #model_path = f"LSTM_25%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
+    #     #model_path = f"LSTM_10%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
 
-        # Begin training
-        print("#### LSTM Training ####")
+    #     # Begin training
+    #     print("#### LSTM Training ####")
 
-        # Train model
-        train_acc, train_loss, val_acc, val_loss, run_epochs = train(model,
-                                                                    train_data_loader,
-                                                                    validation_data_loader,
-                                                                    LOSS_FUNCTION,
-                                                                    OPTIMIZER_TYPE,
-                                                                    EPOCHS,
-                                                                    LEARNING_RATES,
-                                                                    EARLY_STOPPING,
-                                                                    PATIENCE,
-                                                                    MIN_DELTA,
-                                                                    DEVICE,
-                                                                    DEBUG,
-                                                                    class_weights=class_weights,
-                                                                    model_type="LSTM")
+    #     # Train model
+    #     train_acc, train_loss, val_acc, val_loss, run_epochs = train(model,
+    #                                                                 train_data_loader,
+    #                                                                 validation_data_loader,
+    #                                                                 LOSS_FUNCTION,
+    #                                                                 OPTIMIZER_TYPE,
+    #                                                                 EPOCHS,
+    #                                                                 LEARNING_RATES,
+    #                                                                 EARLY_STOPPING,
+    #                                                                 PATIENCE,
+    #                                                                 MIN_DELTA,
+    #                                                                 DEVICE,
+    #                                                                 DEBUG,
+    #                                                                 class_weights=class_weights,
+    #                                                                 model_type="LSTM")
         
-        # Save training time stop
-        stop_timestamp = datetime.now()
+    #     # Save training time stop
+    #     stop_timestamp = datetime.now()
         
-        # Test model
-        test_acc, test_confusion_matrix, misclassified = test(model, "LSTM",test_data_loader, DEVICE)
+    #     # Test model
+    #     test_acc, test_confusion_matrix, misclassified = test(model, "LSTM",test_data_loader, DEVICE)
 
-        # Plot results
-        if test_acc > 0.8:
-            plot_results(train_acc, train_loss,
-                        val_acc, val_loss,
-                        run_epochs, type(model).__name__, start_timestamp, DEVICE,
-                        LOSS_FUNCTION, OPTIMIZER_TYPE,
-                        EPOCHS, LEARNING_RATES, EARLY_STOPPING, PATIENCE, MIN_DELTA,
-                        test_acc, test_confusion_matrix, stop_timestamp, model_path,
-                        [])
+    #     # Plot results
+    #     if test_acc > 0.8:
+    #         plot_results(train_acc, train_loss,
+    #                     val_acc, val_loss,
+    #                     run_epochs, type(model).__name__, start_timestamp, DEVICE,
+    #                     LOSS_FUNCTION, OPTIMIZER_TYPE,
+    #                     EPOCHS, LEARNING_RATES, EARLY_STOPPING, PATIENCE, MIN_DELTA,
+    #                     test_acc, test_confusion_matrix, stop_timestamp, model_path,
+    #                     [])
         
-        # Save model
-        if test_acc > 0.8:
-            torch.save(model.state_dict(), "%s/src/models/mocaplab/all/saved_models/LSTM/%s.ckpt"%(src_folder, model_path))
+    #     # Save model
+    #     if test_acc > 0.8:
+    #         torch.save(model.state_dict(), "%s/src/models/mocaplab/all/saved_models/LSTM/%s.ckpt"%(src_folder, model_path))
         
-        # End training
-        print("#### LSTM End ####")
-    except Exception as e:
-        print(f"Error: {e}")
+    #     # End training
+    #     print("#### LSTM End ####")
+    # except Exception as e:
+    #     print(f"Error: {e}")
 
     
 
@@ -343,7 +343,7 @@ if __name__ == "__main__" :
     '''
     print("#### CNN Datasets ####")
     #bones_to_keep = None
-    for colnum in range(6,0,-1):
+    for colnum in range(14,0,-1):
         dataset = MocaplabDatasetCNN(data_path, 
                                     padding=True, 
                                     bones_to_keep=bones_to_keep, 
