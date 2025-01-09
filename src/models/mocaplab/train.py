@@ -290,7 +290,7 @@ def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[1.,1
             for i_lab in range(len(label)):
                 class_idx = int(label[i_lab].item())
                 class_correct[class_idx] += weighted_batch_correct[i_lab].item()
-                class_total[class_idx] += weight_t[i_lab].item()
+                class_total[class_idx] += len(predicted)
 
             correct += weighted_batch_correct.sum().item()
             total += ((label == label) * weight_t).sum().item()

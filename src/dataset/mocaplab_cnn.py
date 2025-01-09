@@ -55,6 +55,7 @@ class MocaplabDatasetCNN(Dataset):
                                           "Annotation_gloses.csv"), sep="\t")
         unique_val = labels.iloc[:,self.col_num].dropna(inplace=False).unique()
         unique_val.sort()
+        unique_val = unique_val[unique_val != "Inconnu"]
         self.col_name = labels.columns[self.col_num]
         self.class_dict = {}
         for i, val in enumerate(unique_val[::-1]):
@@ -77,7 +78,7 @@ class MocaplabDatasetCNN(Dataset):
             data = np.stack(data)
         
         data = im.fromarray(data)
-        data = data.resize((512, 512))
+        data = data.resize((256, 256))
 
         data = np.array(data)
         data = np.expand_dims(data, axis=0)
@@ -96,7 +97,7 @@ class MocaplabDatatestsetCNN(Dataset):
     PyTorch dataset for the Mocaplab dataset.
     """
 
-    def __init__(self, path, padding=True, train_test_ratio=8, validation_percentage=0.01, nb_samples=None, bones_to_keep=None, center=None, col_num=6):
+    def __init__(self, path, padding=True, train_test_ratio=8, validation_percentage=0.01, nb_samples=None, bones_to_keep=None, center=None, col_num=6, max_length=0):
         super().__init__()
         self.path = path
         self.padding = padding
@@ -104,7 +105,7 @@ class MocaplabDatatestsetCNN(Dataset):
         self.validation_percentage = validation_percentage
         self.bones_to_keep = bones_to_keep
         self.class_dict = None
-        self.max_length = 0
+        self.max_length = max_length
         self.header = None
         self.x = []
         self.y = []

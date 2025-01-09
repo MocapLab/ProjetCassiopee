@@ -2,6 +2,7 @@ import csv
 import numpy as np
 import os
 import pandas as pd
+import math
 
 def read_csv(csv_file, bones_to_keep=None, center=None, debug=False):
     data = []
@@ -42,7 +43,8 @@ def load_data(path, class_dict, max_length=0, x=None, y=None, removed=None, col_
     labels = pd.read_csv(os.path.join(path,
                                           "Annotation_gloses.csv"), sep="\t")
     data_labels = labels.iloc[:,[0,col_num]].dropna(inplace=False)
-    out_labels = {n: c for n, c in zip(data_labels.iloc[:,0], data_labels.iloc[:,1]) if os.path.exists(os.path.join(path,f"{n}.csv"))}
+    data_labels = data_labels[data_labels != "Inconnu"]
+    out_labels = {n: c for n, c in zip(data_labels.iloc[:, 0], data_labels.iloc[:,1 ]) if os.path.exists(os.path.join(path,f"{n}.csv")) and isinstance(c,str)}
     if x is None:
         x = []
     if y is None:
