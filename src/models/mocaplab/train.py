@@ -286,14 +286,14 @@ def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[1.,1
             weight_t = torch.clone(label)
             for i_lab in range(len(label)):
                 weight_t[i_lab] = weight[int(label[i_lab].item())]
-            weighted_batch_correct = (predicted == label) * weight_t
+            weighted_batch_correct = (predicted == label)
             for i_lab in range(len(label)):
                 class_idx = int(label[i_lab].item())
                 class_correct[class_idx] += weighted_batch_correct[i_lab].item()
                 class_total[class_idx] += len(predicted)
 
             correct += weighted_batch_correct.sum().item()
-            total += ((label == label) * weight_t).sum().item()
+            total += ((label == label)).sum().item()
 
             for k in range(len(label)) :
                 if label[k]!=predicted[k] :
@@ -309,7 +309,7 @@ def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[1.,1
             
     # Compute test accuracy
     test_accuracy = correct / total
-    test_accuracy = sum([class_correct[i] / class_total[i]*weight[i] if class_total[i] != 0 else 0 for i in range(num_classes)])
+    # test_accuracy = float(sum([class_correct[i] / total if class_total[i] != 0 else 0 for i in range(num_classes)]))/float(num_classes)
 
     # Create "confusion matrix"
     test_confusion_matrix = confusion_matrix(all_label.cpu(), all_predicted.cpu())

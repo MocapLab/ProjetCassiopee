@@ -33,7 +33,7 @@ if __name__ == "__main__":
     data, _,_ = mcl_read_csv(data_path + "/MLD_X0006_00003-00398-00686-1_CAM_V3.csv", bones_to_keep=bones_to_keep)
     
     data_neutal = data[0:1,:]
-    list_models = glob.glob(r'D:\Github\ProjetCassiopeeMCL\src\models\mocaplab\all\saved_models\*\CNN*.ckpt')
+    list_models = glob.glob(r'D:\Github\ProjetCassiopeeMCL\src\models\mocaplab\all\saved_models\*\*.ckpt')
     data_ref = os.path.join(data_path,"Annotation_gloses.csv")
     with open(data_ref,"r", encoding="utf-8") as f:
         header = f.readline().strip().split("	")
@@ -51,9 +51,9 @@ if __name__ == "__main__":
         col_num = header.index(predicted_name)
 
         if model_data == "CNN":
-            # dataset_cnn_labelled = MocaplabDatasetCNN(path=data_path,
-            #                         padding=True, 
-            #                         bones_to_keep=bones_to_keep, center=data_neutal, col_num=col_num, max_length=1736)
+            dataset_cnn_labelled = MocaplabDatasetCNN(path=data_path,
+                                    padding=True, 
+                                    bones_to_keep=bones_to_keep, center=data_neutal, col_num=col_num, max_length=1736)
             dataset_cnn = MocaplabDatatestsetCNN(path=data_path,
                                     padding=True, 
                                     bones_to_keep=bones_to_keep, center=data_neutal, col_num=col_num, max_length=1736)
@@ -77,9 +77,9 @@ if __name__ == "__main__":
         data_loader_cnn = DataLoader(dataset_cnn,
                                     batch_size=1,
                                     shuffle=False)
-        # test_data_loader = DataLoader(dataset_cnn_labelled,
-        #                             batch_size=1,
-        #                             shuffle=False)
+        test_data_loader = DataLoader(dataset_cnn_labelled,
+                                    batch_size=1,
+                                    shuffle=False)
         if model_data == "CNN":
             cnn = TestCNN(nb_classes=2).to(DEVICE)
         elif model_data == "FC":
@@ -91,12 +91,12 @@ if __name__ == "__main__":
             dict_model.pop("_lossfunc.weight")
         cnn.load_state_dict(dict_model)
         # set the evaluation mode
-        # class_weights_dict = dataset_cnn_labelled.get_labels_weights()
-        # test_acc, test_confusion_matrix, misclassified = test(cnn, model_data, test_data_loader, DEVICE, weight=[class_weights_dict[label] for label in class_weights_dict.keys()])
-        # print(f"Test accuracy: {test_acc}")
-        # fig, (ax1) = plt.subplots(1,1)
-        # sns.heatmap(test_confusion_matrix, annot=True, cmap="flare",  fmt="d", cbar=True, ax=ax1)
-        # plt.savefig(f"{src_folder}/train_results/mocaplab/{model_data}_{dataset_cnn.col_name}_skl.png")
+        class_weights_dict = dataset_cnn_labelled.get_labels_weights()
+        test_acc, test_confusion_matrix, misclassified = test(cnn, model_data, test_data_loader, DEVICE, weight=[class_weights_dict[label] for label in class_weights_dict.keys()])
+        print(f"Test accuracy: {test_acc}")
+        fig, (ax1) = plt.subplots(1,1)
+        sns.heatmap(test_confusion_matrix, annot=True, cmap="flare",  fmt="d", cbar=True, ax=ax1)
+        plt.savefig(f"{src_folder}/train_results/mocaplab/{model_data}_{dataset_cnn.col_name}_skl.png")
 
         # Load the trained weights cnn new model
         #cnn.load_state_dict(torch.load(("/home/self_supervised_learning_gr/self_supervised_learning/dev/ProjetCassiopee/src/models/mocaplab/cnn/saved_models/CNN_20240514_211739.ckpt"),

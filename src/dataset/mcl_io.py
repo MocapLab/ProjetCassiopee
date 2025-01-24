@@ -20,12 +20,18 @@ def read_csv(csv_file, bones_to_keep=None, center=None, debug=False):
                 if bones_to_keep is None:
                     bones_to_keep = out_header
                 id = {}
+                new_id = {}
+                nid = 0
                 for i, bone in enumerate(header_1):
                     bone_type = header_2[i]
                     if bone not in id.keys() and bone.removesuffix('_glob') in bones_to_keep and ((bone_type.startswith('T') and bone_type.endswith('_glob')) or (bone_type.startswith('R') and not bone_type.endswith('_glob'))):
                         id[bone] = [i]
-                    elif bone in id.keys() and bone in bones_to_keep and ((bone_type.startswith('T') and bone_type.endswith('_glob')) or (bone_type.startswith('R') and not bone_type.endswith('_glob'))):
+                        new_id[bone] = [nid]
+                        nid += 1
+                    elif bone in id.keys() and bone.removesuffix('_glob') in bones_to_keep and ((bone_type.startswith('T') and bone_type.endswith('_glob')) or (bone_type.startswith('R') and not bone_type.endswith('_glob'))):
                         id[bone].extend([i])
+                        new_id[bone].extend([nid])
+                        nid += 1
             if n > 2:
                 values = []
                 if id:
@@ -37,9 +43,9 @@ def read_csv(csv_file, bones_to_keep=None, center=None, debug=False):
         data = np.stack(data)
         if center is not None:
             data = data - center
-    return data, out_header, bones_to_keep
+    return data, new_id, bones_to_keep
 
-def load_data(path, class_dict, max_length=0, x=None, y=None, removed=None, col_num=6, bones_to_keep=None):
+def load_data(path, class_dict, max_length=0, x=None, y=None, removed=None, col_num=6, bones_to_keep=None, force_max_length=True):
     labels = pd.read_csv(os.path.join(path,
                                           "Annotation_gloses.csv"), sep="\t")
     data_labels = labels.iloc[:,[0,col_num]].dropna(inplace=False)
@@ -55,15 +61,21 @@ def load_data(path, class_dict, max_length=0, x=None, y=None, removed=None, col_
     files = [i.lower() for i in os.listdir(path)]
     for name, label in out_labels.items():
         filename = name + ".csv"
+        
         if filename.lower() not in files:
+            removed.append(filename)
+        else:
+            data, out_header, bones_to_keep = read_csv(os.path.join(path, filename), bones_to_keep=bones_to_keep)
+            length = len(data)
+
+        if force_max_length and length> max_length:
             removed.append(filename)
         else:
             x.append(filename)
             y.append(class_dict[label])
 
             # Retrieve max length
-            data, out_header, bones_to_keep = read_csv(os.path.join(path, filename), bones_to_keep=bones_to_keep)
-            length = len(data)
-            if length > max_length:
-                max_length = length
+            if not force_max_length:
+                if length > max_length:
+                    max_length = length
     return out_labels, max_length, x, y, removed, out_header, bones_to_keep
