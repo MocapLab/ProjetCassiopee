@@ -297,7 +297,7 @@ def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[1.,1
 
             for k in range(len(label)) :
                 if label[k]!=predicted[k] :
-                    misclassified.append((name[k], int(label[k].item())))
+                    misclassified.append((name[k], int(label[k].item()), output.data.cpu().numpy()))
 
             # Update confusion matrix variables
             if all_label is None and all_predicted is None:
