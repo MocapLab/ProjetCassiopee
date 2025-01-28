@@ -57,7 +57,7 @@ if __name__ == "__main__":
     LEARNING_RATES = [0.01]  # Learning rates
     EARLY_STOPPING = True  # Early stopping flag
     PATIENCE = 20  # Early stopping patience
-    MIN_DELTA = 0.0005  # Early stopping minimum delta
+    MIN_DELTA = 0.001  # Early stopping minimum delta
 
     DEBUG = False  # Debug flag
 
@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
     # bones_to_keep = list(set("C7;C7;C7;T10;T10;T10;LBAC;LBAC;LBAC;RBAC;RBAC;RBAC;CLAV;CLAV;CLAV;STRN;STRN;STRN;LCLAV;LCLAV;LCLAV;RCLAV;RCLAV;RCLAV;LFSHO;LFSHO;LFSHO;LSHOULD;LSHOULD;LSHOULD;LBSHO;LBSHO;LBSHO;LUPA;LUPA;LUPA;LELB;LELB;LELB;LELBEXT;LELBEXT;LELBEXT;LFRM;LFRM;LFRM;LWRA;LWRA;LWRA;LWRB;LWRB;LWRB;RFSHO;RFSHO;RFSHO;RSHOULD;RSHOULD;RSHOULD;RBSHO;RBSHO;RBSHO;RUPA;RUPA;RUPA;RELB;RELB;RELB;RELBEXT;RELBEXT;RELBEXT;RFRM;RFRM;RFRM;RWRA;RWRA;RWRA;RWRB;RWRB;RWRB;LFWT;LFWT;LFWT;RFWT;RFWT;RFWT;LBWT;LBWT;LBWT;RBWT;RBWT;RBWT".split(';')))
 
-    if False:
+    if True:
         for colnum in range(34, 0, -1):
             bones_to_keep = [
                 "CC_Base_Head",
@@ -237,9 +237,10 @@ if __name__ == "__main__":
                 dataset.get_labels_weights()
             )  # inverse relative amount of samples per class
             # sample_weights = [0] * n
-            class_weights = [
-                class_weights_dict[label] for label in class_weights_dict.keys()
-            ]
+            # class_weights = [
+            #     class_weights_dict[label] for label in class_weights_dict.keys()
+            # ]
+            class_weights = [0.5,0.5]
             # for idx in range(n):
             #     (data, label, name) = dataset[idx]
             #     sample_weights[idx] = class_weights_dict[label]
@@ -551,273 +552,211 @@ if __name__ == "__main__":
     """
     CNN Training
     # """
-    print("#### CNN Datasets ####")
-    # bones_to_keep = None
-    for colnum in range(34, 0, -1):
-        bones_to_keep = [
-            "CC_Base_Head",
-            "CC_Base_L_Clavicle",
-            "CC_Base_L_Upperarm",
-            "CC_Base_L_UpperarmTwist02",
-            "CC_Base_NeckTwist01",
-            "CC_Base_NeckTwist02",
-            "CC_Base_R_Clavicle",
-            "CC_Base_R_Upperarm",
-            "CC_Base_R_UpperarmTwist02",
-            "CC_Base_Spine01",
-            "CC_Base_Spine02",
-            "CC_Base_Waist",
-            "C_Base_NeckTwist01",
-            "hand_l",
-            "hand_r",
-            "index_01_l",
-            "index_01_r",
-            "index_02_l",
-            "index_02_r",
-            "index_03_l",
-            "index_03_r",
-            "index_metacarpal_l",
-            "index_metacarpal_r",
-            "lowerarm_l",
-            "lowerarm_r",
-            "lowerarm_twist_01_l",
-            "lowerarm_twist_01_r",
-            "middle_01_l",
-            "middle_01_r",
-            "middle_02_l",
-            "middle_02_r",
-            "middle_03_l",
-            "middle_03_r",
-            "middle_metacarpal_l",
-            "middle_metacarpal_r",
-            "pinky_01_l",
-            "pinky_01_r",
-            "pinky_02_l",
-            "pinky_02_r",
-            "pinky_03_l",
-            "pinky_03_r",
-            "pinky_metacarpal_l",
-            "pinky_metacarpal_r",
-            "ring_01_l",
-            "ring_01_r",
-            "ring_02_l",
-            "ring_02_r",
-            "ring_03_l",
-            "ring_03_r",
-            "ring_metacarpal_l",
-            "ring_metacarpal_r",
-            "thumb_01_l",
-            "thumb_01_r",
-            "thumb_02_l",
-            "thumb_02_r",
-            "thumb_03_l",
-            "thumb_03_r",
-        ]
+    if False:
+        print("#### CNN Datasets ####")
+        # bones_to_keep = None
+        for colnum in range(34, 0, -1):
+            bones_to_keep = [
+                "CC_Base_Head",
+                "CC_Base_L_Clavicle",
+                "CC_Base_L_Upperarm",
+                "CC_Base_L_UpperarmTwist02",
+                "CC_Base_NeckTwist01",
+                "CC_Base_NeckTwist02",
+                "CC_Base_R_Clavicle",
+                "CC_Base_R_Upperarm",
+                "CC_Base_R_UpperarmTwist02",
+                "CC_Base_Spine01",
+                "CC_Base_Spine02",
+                "CC_Base_Waist",
+                "C_Base_NeckTwist01",
+                "hand_l",
+                "hand_r",
+                "index_01_l",
+                "index_01_r",
+                "index_02_l",
+                "index_02_r",
+                "index_03_l",
+                "index_03_r",
+                "index_metacarpal_l",
+                "index_metacarpal_r",
+                "lowerarm_l",
+                "lowerarm_r",
+                "lowerarm_twist_01_l",
+                "lowerarm_twist_01_r",
+                "middle_01_l",
+                "middle_01_r",
+                "middle_02_l",
+                "middle_02_r",
+                "middle_03_l",
+                "middle_03_r",
+                "middle_metacarpal_l",
+                "middle_metacarpal_r",
+                "pinky_01_l",
+                "pinky_01_r",
+                "pinky_02_l",
+                "pinky_02_r",
+                "pinky_03_l",
+                "pinky_03_r",
+                "pinky_metacarpal_l",
+                "pinky_metacarpal_r",
+                "ring_01_l",
+                "ring_01_r",
+                "ring_02_l",
+                "ring_02_r",
+                "ring_03_l",
+                "ring_03_r",
+                "ring_metacarpal_l",
+                "ring_metacarpal_r",
+                "thumb_01_l",
+                "thumb_01_r",
+                "thumb_02_l",
+                "thumb_02_r",
+                "thumb_03_l",
+                "thumb_03_r",
+            ]
 
-        if colnum >= 10:
-            bones_to_keep = bones_to_keep[27:]
-            indexes = flatten(
-                [
-                    flatten([out_header[i + "_glob"] for i in bones_to_keep]),
-                    flatten([out_header[i] for i in bones_to_keep]),
-                ]
+            if colnum >= 10:
+                bones_to_keep = bones_to_keep[27:]
+                indexes = flatten(
+                    [
+                        flatten([out_header[i + "_glob"] for i in bones_to_keep]),
+                        flatten([out_header[i] for i in bones_to_keep]),
+                    ]
+                )
+                indexes.sort()
+                data_neutal = data[0:1, indexes]
+
+            else:
+                data_neutal = data[0:1, :]
+            dataset = MocaplabDatasetCNN(
+                data_path,
+                padding=True,
+                bones_to_keep=bones_to_keep,
+                center=data_neutal,
+                col_num=colnum,
+                max_length=512,
             )
-            indexes.sort()
-            data_neutal = data[0:1, indexes]
+            datapred = MocaplabDatatestsetCNN(
+                data_path,
+                padding=True,
+                bones_to_keep=bones_to_keep,
+                center=data_neutal,
+                col_num=colnum,
+                max_length=512,
+            )
+            print(dataset.get_labels_weights())
+            # Split dataset
+            n = len(dataset)
+            class_weights_dict = (
+                dataset.get_labels_weights()
+            )  # inverse relative amount of samples per class
+            # sample_weights = [0] * n
+            class_weights = [
+                class_weights_dict[label] for label in class_weights_dict.keys()
+            ]
+            # for idx in range(n):
+            #     (data, label, name) = dataset[idx]
+            #     sample_weights[idx] = class_weights_dict[label]
 
-        else:
-            data_neutal = data[0:1, :]
-        dataset = MocaplabDatasetCNN(
-            data_path,
-            padding=True,
-            bones_to_keep=bones_to_keep,
-            center=data_neutal,
-            col_num=colnum,
-            max_length=512,
-        )
-        datapred = MocaplabDatatestsetCNN(
-            data_path,
-            padding=True,
-            bones_to_keep=bones_to_keep,
-            center=data_neutal,
-            col_num=colnum,
-            max_length=512,
-        )
-        print(dataset.get_labels_weights())
-        # Split dataset
-        n = len(dataset)
-        class_weights_dict = (
-            dataset.get_labels_weights()
-        )  # inverse relative amount of samples per class
-        # sample_weights = [0] * n
-        class_weights = [
-            class_weights_dict[label] for label in class_weights_dict.keys()
-        ]
-        # for idx in range(n):
-        #     (data, label, name) = dataset[idx]
-        #     sample_weights[idx] = class_weights_dict[label]
+            # sampler = WeightedRandomSampler(sample_weights, num_samples=len(sample_weights), replacement=True)
 
-        # sampler = WeightedRandomSampler(sample_weights, num_samples=len(sample_weights), replacement=True)
-
-        split = [int(n * 0.8), int(n * 0.1), int(n * 0.1)]
-        diff = n - split[0] - split[1] - split[2]
-        train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(
-            dataset=dataset,
-            lengths=[split[0], split[1], split[2] + diff],
-            generator=generator,
-        )
-
-        # Split dataset
-        n = len(dataset)
-
-        train_dataset = Subset(dataset, train_dataset.indices)
-        validation_dataset = Subset(dataset, validation_dataset.indices)
-        test_dataset = Subset(dataset, test_dataset.indices)
-        from collections import defaultdict
-
-        label_counter = defaultdict(int)
-
-        for data_t, label, name in train_dataset:
-            label_counter[label] += 1
-        print(label_counter)
-        # weight = [0]*n
-        # weight[dataset.labels == 0] = 0.27
-        # weight[dataset.labels == 1] = 0.73
-
-        # WeightedRandomSampler(weight,)
-        # Training parameters
-        BATCH_SIZE = 16  # Batch sizes
-        EPOCHS = [999999]  # Number of epochs
-        LEARNING_RATES = [0.005]  # Learning rates
-        EARLY_STOPPING = True  # Early stopping flag
-        PATIENCE = 20  # Early stopping patience
-        MIN_DELTA = 0.005  # Early stopping minimum delta
-
-        DEBUG = False  # Debug flag
-
-        print(f"Total length -> {len(dataset)} samples")
-        print(f"Train dataset -> {len(train_dataset)} samples")
-        print(f"Test dataset -> {len(test_dataset)} samples")
-        print(f"Validation dataset -> {len(validation_dataset)} samples")
-
-        # Data loaders
-        print("#### CNN Data Loaders ####")
-
-        train_data_loader = DataLoader(
-            train_dataset, batch_size=BATCH_SIZE, shuffle=False
-        )
-
-        test_data_loader = DataLoader(
-            test_dataset, batch_size=BATCH_SIZE, shuffle=False
-        )
-
-        validation_data_loader = DataLoader(
-            validation_dataset, batch_size=BATCH_SIZE, shuffle=False
-        )
-
-        all_data_loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=False)
-
-        pred_data_loader = DataLoader(datapred, batch_size=1, shuffle=False)
-        cudnn.benchmark = True
-        # Create neural network
-        print("#### CNN Model ####")
-        model = TestCNN(nb_classes=2, bones_names=bones_to_keep).to(DEVICE)
-        for param in model.conv3_3.parameters():
-            param.requires_grad = True
-        for param in model.conv3_2.parameters():
-            param.requires_grad = True
-        for param in model.conv3_1.parameters():
-            param.requires_grad = True
-        for param in model.fc1.parameters():
-            param.requires_grad = True
-        for param in model.fc2.parameters():
-            param.requires_grad = True
-        for param in model.fc3.parameters():
-            param.requires_grad = True
-        """state_dict = torch.load("self_supervised_learning/dev/ProjetCassiopee/src/models/mocaplab/all/saved_models/SSL_CNN/encoder_SSL_CNN_90%_20240529_162101_epoch_280.ckpt")
-        
-        flattened_state_dict = {}
-        for key, val in state_dict.items():
-            for sub_key, sub_val in val.items():
-                new_key = key + '.' + sub_key
-                flattened_state_dict[new_key] = sub_val
-        
-        model.load_state_dict(state_dict=flattened_state_dict)
-
-        # Désactiver le calcul du gradient pour tous les paramètres du modèle
-        for param in model.parameters():
-            param.requires_grad = False
-
-        # Activer le calcul du gradient pour les paramètres de fc1 et fc2
-        for param in model.fc1.parameters():
-            param.requires_grad = True
-        for param in model.fc2.parameters():
-            param.requires_grad = True
-        for param in model.fc3.parameters():
-            param.requires_grad = True
-        for param in model.conv3_3.parameters():
-            param.requires_grad = True
-        for param in model.conv3_2.parameters():
-            param.requires_grad = True
-        for param in model.conv3_1.parameters():
-            param.requires_grad = True"""
-
-        # Save training time start
-        start_timestamp = datetime.now()
-
-        # Create path for saving things...
-        model_path = (
-            f"CNN_{dataset.col_name}_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
-        )
-        # model_path = f"CNN_50%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
-        # model_path = f"CNN_25%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
-        # model_path = f"CNN_10%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
-        # model_path = f"SSL_CNN_fc-only_10%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
-
-        # Begin training
-        print("#### CNN Training ####")
-
-        # Train model
-        train_acc, train_loss, val_acc, val_loss, run_epochs = train(
-            model,
-            train_data_loader,
-            validation_data_loader,
-            LOSS_FUNCTION,
-            OPTIMIZER_TYPE,
-            EPOCHS,
-            LEARNING_RATES,
-            EARLY_STOPPING,
-            PATIENCE,
-            MIN_DELTA,
-            DEVICE,
-            DEBUG,
-            class_weights=class_weights,
-            model_type="CNN",
-        )
-
-        # Save training time stop
-        stop_timestamp = datetime.now()
-
-        # Test model
-        test_acc, test_confusion_matrix, misclassified = test(
-            model, "CNN", test_data_loader, DEVICE
-        )
-
-        # Plot results
-        if test_acc > 0.8:
-            all_acc, all_confusion_matrix, all_misclassified = test(
-                model, "CNN", all_data_loader, DEVICE
+            split = [int(n * 0.8), int(n * 0.1), int(n * 0.1)]
+            diff = n - split[0] - split[1] - split[2]
+            train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(
+                dataset=dataset,
+                lengths=[split[0], split[1], split[2] + diff],
+                generator=generator,
             )
 
-            plot_results(
-                train_acc,
-                train_loss,
-                val_acc,
-                val_loss,
-                run_epochs,
-                type(model).__name__ + "full",
-                start_timestamp,
-                DEVICE,
+            # Split dataset
+            n = len(dataset)
+
+            train_dataset = Subset(dataset, train_dataset.indices)
+            validation_dataset = Subset(dataset, validation_dataset.indices)
+            test_dataset = Subset(dataset, test_dataset.indices)
+            from collections import defaultdict
+
+            label_counter = defaultdict(int)
+
+            for data_t, label, name in train_dataset:
+                label_counter[label] += 1
+            print(label_counter)
+            # weight = [0]*n
+            # weight[dataset.labels == 0] = 0.27
+            # weight[dataset.labels == 1] = 0.73
+
+            # WeightedRandomSampler(weight,)
+            # Training parameters
+            BATCH_SIZE = 16  # Batch sizes
+            EPOCHS = [999999]  # Number of epochs
+            LEARNING_RATES = [0.005]  # Learning rates
+            EARLY_STOPPING = True  # Early stopping flag
+            PATIENCE = 20  # Early stopping patience
+            MIN_DELTA = 0.005  # Early stopping minimum delta
+
+            DEBUG = False  # Debug flag
+
+            print(f"Total length -> {len(dataset)} samples")
+            print(f"Train dataset -> {len(train_dataset)} samples")
+            print(f"Test dataset -> {len(test_dataset)} samples")
+            print(f"Validation dataset -> {len(validation_dataset)} samples")
+
+            # Data loaders
+            print("#### CNN Data Loaders ####")
+
+            train_data_loader = DataLoader(
+                train_dataset, batch_size=BATCH_SIZE, shuffle=False
+            )
+
+            test_data_loader = DataLoader(
+                test_dataset, batch_size=BATCH_SIZE, shuffle=False
+            )
+
+            validation_data_loader = DataLoader(
+                validation_dataset, batch_size=BATCH_SIZE, shuffle=False
+            )
+
+            all_data_loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=False)
+
+            pred_data_loader = DataLoader(datapred, batch_size=1, shuffle=False)
+            cudnn.benchmark = True
+            # Create neural network
+            print("#### CNN Model ####")
+            model = TestCNN(nb_classes=2, bones_names=bones_to_keep).to(DEVICE)
+            for param in model.conv3_3.parameters():
+                param.requires_grad = True
+            for param in model.conv3_2.parameters():
+                param.requires_grad = True
+            for param in model.conv3_1.parameters():
+                param.requires_grad = True
+            for param in model.fc1.parameters():
+                param.requires_grad = True
+            for param in model.fc2.parameters():
+                param.requires_grad = True
+            for param in model.fc3.parameters():
+                param.requires_grad = True
+
+            # Save training time start
+            start_timestamp = datetime.now()
+
+            # Create path for saving things...
+            model_path = (
+                f"CNN_{dataset.col_name}_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
+            )
+            # model_path = f"CNN_50%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
+            # model_path = f"CNN_25%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
+            # model_path = f"CNN_10%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
+            # model_path = f"SSL_CNN_fc-only_10%_{start_timestamp.strftime('%Y%m%d_%H%M%S')}"
+
+            # Begin training
+            print("#### CNN Training ####")
+
+            # Train model
+            train_acc, train_loss, val_acc, val_loss, run_epochs = train(
+                model,
+                train_data_loader,
+                validation_data_loader,
                 LOSS_FUNCTION,
                 OPTIMIZER_TYPE,
                 EPOCHS,
@@ -825,42 +764,78 @@ if __name__ == "__main__":
                 EARLY_STOPPING,
                 PATIENCE,
                 MIN_DELTA,
-                "%.3f, %.3f" % (test_acc, all_acc),
-                all_confusion_matrix,
-                stop_timestamp,
-                model_path,
-                [],
-            )
-            print(f"missclassified : {all_misclassified}")
-            with open(
-                "%s/train_results/mocaplab/%s" % (src_folder, model_path + "full")
-                + ".txt",
-                "w",
-            ) as f:
-                for i in all_misclassified:
-                    f.write("%s %s %s\n" %(i[0].replace("_CAM_V3.csv",""),i[1],np.array2string(i[2], precision=3, floatmode='fixed', separator=',', suppress_small=True)[1:-1]))
-
-        if test_acc > 0.9:
-            # Save model
-            torch.save(
-                model.state_dict(),
-                "%s/src/models/mocaplab/all/saved_models/CNN/%s.ckpt"
-                % (src_folder, model_path),
+                DEVICE,
+                DEBUG,
+                class_weights=class_weights,
+                model_type="CNN",
             )
 
-            for k, img in enumerate(pred_data_loader):
-                img, name = img
-                img = img.to(torch.float32).to(DEVICE)
+            # Save training time stop
+            stop_timestamp = datetime.now()
 
-                pred = model(img)
-                _, label_pred = torch.max(pred.data, dim=1)
-                label_pred = label_pred.detach().item()
+            # Test model
+            test_acc, test_confusion_matrix, misclassified = test(
+                model, "CNN", test_data_loader, DEVICE
+            )
 
-                val = f"{name[0].split('.csv')[0]}\t\t{label_pred}\t{np.array2string(pred[0, :].detach().cpu().numpy(), precision=3, floatmode='fixed', separator=',', suppress_small=True)[1:-1]}"
+            # Plot results
+            if test_acc > 0.8:
+                all_acc, all_confusion_matrix, all_misclassified = test(
+                    model, "CNN", all_data_loader, DEVICE
+                )
+
+                plot_results(
+                    train_acc,
+                    train_loss,
+                    val_acc,
+                    val_loss,
+                    run_epochs,
+                    type(model).__name__ + "full",
+                    start_timestamp,
+                    DEVICE,
+                    LOSS_FUNCTION,
+                    OPTIMIZER_TYPE,
+                    EPOCHS,
+                    LEARNING_RATES,
+                    EARLY_STOPPING,
+                    PATIENCE,
+                    MIN_DELTA,
+                    "%.3f, %.3f" % (test_acc, all_acc),
+                    all_confusion_matrix,
+                    stop_timestamp,
+                    model_path,
+                    [],
+                )
+                print(f"missclassified : {all_misclassified}")
                 with open(
-                    f"{src_folder}/test_results/mocaplab/results_{model_path}.csv", "a"
+                    "%s/train_results/mocaplab/%s" % (src_folder, model_path + "full")
+                    + ".txt",
+                    "w",
                 ) as f:
-                    f.write("%s\n" % val)
+                    for i in all_misclassified:
+                        f.write("%s %s %s\n" %(i[0].replace("_CAM_V3.csv",""),i[1],np.array2string(i[2], precision=3, floatmode='fixed', separator=',', suppress_small=True)[1:-1]))
+
+            if test_acc > 0.9:
+                # Save model
+                torch.save(
+                    model.state_dict(),
+                    "%s/src/models/mocaplab/all/saved_models/CNN/%s.ckpt"
+                    % (src_folder, model_path),
+                )
+
+                for k, img in enumerate(pred_data_loader):
+                    img, name = img
+                    img = img.to(torch.float32).to(DEVICE)
+
+                    pred = model(img)
+                    _, label_pred = torch.max(pred.data, dim=1)
+                    label_pred = label_pred.detach().item()
+
+                    val = f"{name[0].split('.csv')[0]}\t\t{label_pred}\t{np.array2string(pred[0, :].detach().cpu().numpy(), precision=3, floatmode='fixed', separator=',', suppress_small=True)[1:-1]}"
+                    with open(
+                        f"{src_folder}/test_results/mocaplab/results_{model_path}.csv", "a"
+                    ) as f:
+                        f.write("%s\n" % val)
         # End training
 
     #     print("#### CNN End ####")

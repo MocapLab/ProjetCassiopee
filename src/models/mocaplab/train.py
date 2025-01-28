@@ -25,7 +25,7 @@ def train(
         min_delta=1e-3,
         device=torch.device("cpu"),
         debug=False,
-        class_weights=[1.,1.],
+        class_weights=[0.5,0.5],
         model_type="FC"):
 
     # Accuracies
@@ -101,7 +101,7 @@ def train_one_epoch(model, type, data_loader, loss_function, optimizer, device, 
     # Enable training
     model.train(True)
     if weight is None:
-        weight = [1.,1.]
+        weight = [0.5,0.5]
 
     # Initialise accuracy variables
     total = 0
@@ -154,7 +154,7 @@ def train_one_epoch(model, type, data_loader, loss_function, optimizer, device, 
         total += ((label == label) * weight_t).sum().item()
 
         # Compute loss
-        loss_function.weight = torch.tensor(weight, dtype=torch.float).to(device)
+        # loss_function.weight = torch.tensor(weight, dtype=torch.float).to(device)
         loss = loss_function(output, label.to(device).long())
 
         # Compute gradient loss
@@ -178,7 +178,7 @@ def train_one_epoch(model, type, data_loader, loss_function, optimizer, device, 
     
     return train_accuracy, train_loss
 
-def evaluate(model, type, data_loader, loss_function, device, weight=[1.,1.]):
+def evaluate(model, type, data_loader, loss_function, device, weight=[0.5,0.5]):
     
     # Initialise accuracy variables
     total = 0
@@ -229,7 +229,7 @@ def evaluate(model, type, data_loader, loss_function, device, weight=[1.,1.]):
             
             # correct += batch_correct
             # Compute loss
-            loss_function.weight = torch.tensor(weight, dtype=torch.float).to(device)
+            # loss_function.weight = torch.tensor(weight, dtype=torch.float).to(device)
             loss = loss_function(output, label.cuda().long())
 
             # Update batch loss
@@ -246,7 +246,7 @@ def evaluate(model, type, data_loader, loss_function, device, weight=[1.,1.]):
 
     return validation_accuracy, validation_loss
 
-def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[1.,1.]):
+def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[.5,.5]):
     # Accuracy variables
     correct = 0
     total = 0
@@ -286,14 +286,14 @@ def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[1.,1
             weight_t = torch.clone(label)
             for i_lab in range(len(label)):
                 weight_t[i_lab] = weight[int(label[i_lab].item())]
-            weighted_batch_correct = (predicted == label)
+            weighted_batch_correct = (predicted == label) * weight_t
             for i_lab in range(len(label)):
                 class_idx = int(label[i_lab].item())
                 class_correct[class_idx] += weighted_batch_correct[i_lab].item()
                 class_total[class_idx] += len(predicted)
 
             correct += weighted_batch_correct.sum().item()
-            total += ((label == label)).sum().item()
+            total += ((label == label) * weight_t).sum().item()
 
             for k in range(len(label)) :
                 if label[k]!=predicted[k] :

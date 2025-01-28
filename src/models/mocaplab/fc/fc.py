@@ -11,15 +11,18 @@ class MocaplabFC(nn.Module):
         self.softmax = nn.Softmax(dim = 1)
         self._lossfunc = loss
         self.bones_names = bones_names
+        self.dropout = nn.Dropout(0.25)
     
     def forward(self, x) :
         x = self.fc1(x)
+        x = self.dropout(x)
         x = self.relu(x)
         x = self.fc2(x)
+        x = self.dropout(x)
         x = self.relu(x)
         x = self.fc3(x)
         x = self.sigmoid(x)
-        x = self.softmax(x)
+        # x = self.softmax(x)
         return x
     
     def loss(self, x, y) :
