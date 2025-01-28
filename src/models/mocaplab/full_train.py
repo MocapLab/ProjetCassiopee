@@ -137,7 +137,7 @@ if __name__ == "__main__":
     # bones_to_keep = list(set("C7;C7;C7;T10;T10;T10;LBAC;LBAC;LBAC;RBAC;RBAC;RBAC;CLAV;CLAV;CLAV;STRN;STRN;STRN;LCLAV;LCLAV;LCLAV;RCLAV;RCLAV;RCLAV;LFSHO;LFSHO;LFSHO;LSHOULD;LSHOULD;LSHOULD;LBSHO;LBSHO;LBSHO;LUPA;LUPA;LUPA;LELB;LELB;LELB;LELBEXT;LELBEXT;LELBEXT;LFRM;LFRM;LFRM;LWRA;LWRA;LWRA;LWRB;LWRB;LWRB;RFSHO;RFSHO;RFSHO;RSHOULD;RSHOULD;RSHOULD;RBSHO;RBSHO;RBSHO;RUPA;RUPA;RUPA;RELB;RELB;RELB;RELBEXT;RELBEXT;RELBEXT;RFRM;RFRM;RFRM;RWRA;RWRA;RWRA;RWRB;RWRB;RWRB;LFWT;LFWT;LFWT;RFWT;RFWT;RFWT;LBWT;LBWT;LBWT;RBWT;RBWT;RBWT".split(';')))
 
     if False:
-        for colnum in range(30, 0, -1):
+        for colnum in range(34, 0, -1):
             bones_to_keep = [
                 "CC_Base_Head",
                 "CC_Base_L_Clavicle",
@@ -198,7 +198,7 @@ if __name__ == "__main__":
                 "thumb_03_r",
             ]
 
-            if colnum > 22:
+            if colnum >= 10:
                 bones_to_keep = bones_to_keep[27:]
                 indexes = flatten(
                     [
@@ -293,7 +293,7 @@ if __name__ == "__main__":
             model = MocaplabFC(
                 dataset.max_length * dataset[0][0].shape[1],
                 loss=LOSS_FUNCTION,
-                numclass=2,
+                numclass=2, bones_names=bones_to_keep
             ).to(DEVICE)
             for param in model.fc1.parameters():
                 param.requires_grad = True
@@ -409,7 +409,7 @@ if __name__ == "__main__":
                         "w",
                     ) as f:
                         for i in all_misclassified:
-                            f.write("%s %s\n" % i)
+                            f.write("%s %s %s\n" %(i[0].replace("_CAM_V3.csv",""),i[1],np.array2string(i[2], precision=3, floatmode='fixed', separator=',', suppress_small=True)[1:-1]))
 
                 # Save model
                 if test_acc > 0.9:
@@ -550,10 +550,10 @@ if __name__ == "__main__":
 
     """
     CNN Training
-    """
+    # """
     print("#### CNN Datasets ####")
     # bones_to_keep = None
-    for colnum in range(30, 0, -1):
+    for colnum in range(34, 0, -1):
         bones_to_keep = [
             "CC_Base_Head",
             "CC_Base_L_Clavicle",
@@ -614,7 +614,7 @@ if __name__ == "__main__":
             "thumb_03_r",
         ]
 
-        if colnum > 22:
+        if colnum >= 10:
             bones_to_keep = bones_to_keep[27:]
             indexes = flatten(
                 [
@@ -633,7 +633,7 @@ if __name__ == "__main__":
             bones_to_keep=bones_to_keep,
             center=data_neutal,
             col_num=colnum,
-            max_length=600,
+            max_length=512,
         )
         datapred = MocaplabDatatestsetCNN(
             data_path,
@@ -641,7 +641,7 @@ if __name__ == "__main__":
             bones_to_keep=bones_to_keep,
             center=data_neutal,
             col_num=colnum,
-            max_length=600,
+            max_length=512,
         )
         print(dataset.get_labels_weights())
         # Split dataset
@@ -686,7 +686,7 @@ if __name__ == "__main__":
 
         # WeightedRandomSampler(weight,)
         # Training parameters
-        BATCH_SIZE = 32  # Batch sizes
+        BATCH_SIZE = 16  # Batch sizes
         EPOCHS = [999999]  # Number of epochs
         LEARNING_RATES = [0.005]  # Learning rates
         EARLY_STOPPING = True  # Early stopping flag
@@ -721,7 +721,7 @@ if __name__ == "__main__":
         cudnn.benchmark = True
         # Create neural network
         print("#### CNN Model ####")
-        model = TestCNN(nb_classes=2).to(DEVICE)
+        model = TestCNN(nb_classes=2, bones_names=bones_to_keep).to(DEVICE)
         for param in model.conv3_3.parameters():
             param.requires_grad = True
         for param in model.conv3_2.parameters():
@@ -826,7 +826,7 @@ if __name__ == "__main__":
                 PATIENCE,
                 MIN_DELTA,
                 "%.3f, %.3f" % (test_acc, all_acc),
-                test_confusion_matrix,
+                all_confusion_matrix,
                 stop_timestamp,
                 model_path,
                 [],
@@ -838,7 +838,7 @@ if __name__ == "__main__":
                 "w",
             ) as f:
                 for i in all_misclassified:
-                    f.write("%s %s\n" % i)
+                    f.write("%s %s %s\n" %(i[0].replace("_CAM_V3.csv",""),i[1],np.array2string(i[2], precision=3, floatmode='fixed', separator=',', suppress_small=True)[1:-1]))
 
         if test_acc > 0.9:
             # Save model
@@ -863,4 +863,4 @@ if __name__ == "__main__":
                     f.write("%s\n" % val)
         # End training
 
-        print("#### CNN End ####")
+    #     print("#### CNN End ####")

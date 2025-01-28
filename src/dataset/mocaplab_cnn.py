@@ -78,7 +78,7 @@ class MocaplabDatasetCNN(Dataset):
             data = np.stack(data)
         
         data = im.fromarray(data)
-        data = data.resize((256, 256))
+        data = data.resize((512, self.max_length))
 
         data = np.array(data)
         data = np.expand_dims(data, axis=0)
@@ -165,7 +165,7 @@ class MocaplabDatatestsetCNN(Dataset):
             data = np.stack(data)
         
         data = im.fromarray(data)
-        data = data.resize((256, 256))
+        data = data.resize((512, self.max_length))
 
         data = np.array(data)
         data = np.expand_dims(data, axis=0)

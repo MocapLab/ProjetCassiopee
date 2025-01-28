@@ -1,7 +1,7 @@
 import torch.nn as nn
 
 class MocaplabFC(nn.Module):
-    def __init__(self, input_size, numclass=2, loss=nn.CrossEntropyLoss()) :
+    def __init__(self, input_size, numclass=2, loss=nn.CrossEntropyLoss(), bones_names=None) :
         super().__init__()
         self.fc1 = nn.Linear(input_size, 256)
         self.fc2 = nn.Linear(256, 512)
@@ -10,6 +10,7 @@ class MocaplabFC(nn.Module):
         self.sigmoid = nn.Sigmoid()
         self.softmax = nn.Softmax(dim = 1)
         self._lossfunc = loss
+        self.bones_names = bones_names
     
     def forward(self, x) :
         x = self.fc1(x)
