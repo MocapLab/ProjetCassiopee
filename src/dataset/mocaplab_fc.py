@@ -61,6 +61,7 @@ class MocaplabDatasetFC(Dataset):
                                           "Annotation_gloses.csv"), sep="\t")
         unique_val = labels.iloc[:,self.col_num].dropna(inplace=False).unique()
         unique_val = unique_val[unique_val != "Inconnu"]
+        unique_val.sort()
         print(f"unique_val {unique_val}")
         self.col_name = labels.columns[self.col_num]
         self.class_dict = {}
@@ -138,10 +139,12 @@ class MocaplabDatatestsetFC(Dataset):
     def _create_labels_dict(self):
         labels = pd.read_csv(os.path.join(self.path,
                                           "Annotation_gloses.csv"), sep="\t")
-        unique_val = labels.iloc[:, self.col_num].unique()
+        unique_val = labels.iloc[:, self.col_num].dropna(inplace=False).unique()
+        unique_val = unique_val[unique_val != "Inconnu"]
+        unique_val.sort()
         self.col_name = labels.columns[self.col_num]
         self.class_dict = {}
-        for i, val in enumerate(unique_val):
+        for i, val in enumerate(unique_val[::-1]):
             self.class_dict[val] = i
         return self.class_dict
     

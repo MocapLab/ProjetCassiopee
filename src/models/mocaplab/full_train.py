@@ -8,6 +8,7 @@ src_folder = os.path.abspath(
 sys.path.append(src_folder)
 import torch
 from torch.utils.data import DataLoader, WeightedRandomSampler, Subset
+from sklearn.model_selection import train_test_split
 
 from train import train, test
 from plot_results import plot_results
@@ -248,14 +249,23 @@ if __name__ == "__main__":
             # sampler = WeightedRandomSampler(sample_weights, num_samples=len(sample_weights), replacement=True)
 
             split = [int(n * 0.8), int(n * 0.1), int(n * 0.1)]
-            diff = n - split[0] - split[1] - split[2]
-            train_dataset, validation_dataset, test_dataset = (
-                torch.utils.data.random_split(
-                    dataset=dataset,
-                    lengths=[split[0], split[1], split[2] + diff],
-                    generator=generator,
-                )
+            X_train, X_temp, y_train, y_temp = train_test_split(
+            np.arange(len(dataset.y)),
+            dataset.y,
+            train_size=split[0],
+            stratify=dataset.y,
+            random_state=0
             )
+            X_val, X_test, y_val, y_test = train_test_split(
+                X_temp,
+                y_temp,
+                train_size=split[1]/(split[1]+split[2]),
+                stratify=y_temp,
+                random_state=0)
+            train_dataset = Subset(dataset, X_train)
+            validation_dataset = Subset(dataset, X_val)
+            test_dataset = Subset(dataset, X_test)
+            
             # 50% data
             # diff = n - int(n*0.3) - int(n*0.2) - int(n*0.5)
             # train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(dataset=dataset, lengths=[int(n*0.15), int(n*0.1), int(n*0.75)+diff], generator=generator)
@@ -361,7 +371,7 @@ if __name__ == "__main__":
 
                 # Test model
                 test_acc, test_confusion_matrix, misclassified = test(
-                    model, "FC", test_data_loader, DEVICE
+                    model, "FC", test_data_loader, DEVICE, class_dict=dataset.class_dict
                 )
                 print(f"")
                 print(f"Test accuracy: {test_acc}")
@@ -378,7 +388,7 @@ if __name__ == "__main__":
                     #             [])
                     #             #misclassified)
                     all_acc, all_confusion_matrix, all_misclassified = test(
-                        model, "FC", all_data_loader, DEVICE
+                        model, "FC", all_data_loader, DEVICE, class_dict=dataset.class_dict
                     )
                     plot_results(
                         train_acc,
@@ -400,7 +410,8 @@ if __name__ == "__main__":
                         all_confusion_matrix,
                         stop_timestamp,
                         model_path + "full",
-                        [],
+                        [colnum],
+                        labels = dataset.class_dict
                     )
                     print(f"missclassified : {all_misclassified}")
                     with open(
@@ -410,7 +421,7 @@ if __name__ == "__main__":
                         "w",
                     ) as f:
                         for i in all_misclassified:
-                            f.write("%s %s %s\n" %(i[0].replace("_CAM_V3.csv",""),i[1],np.array2string(i[2], precision=3, floatmode='fixed', separator=',', suppress_small=True)[1:-1]))
+                            f.write("%s %s %s %s\n" %(i[0].replace("_CAM_V3.csv",""),i[1],i[2],np.array2string(i[3], precision=3, floatmode='fixed', separator=',', suppress_small=True)[1:-1]))
 
                 # Save model
                 if test_acc > 0.9:
@@ -427,7 +438,8 @@ if __name__ == "__main__":
                         pred = model(img)
                         _, label_pred = torch.max(pred.data, dim=1)
                         label_pred = label_pred.detach().item()
-                        val = f"{name[0].split('.csv')[0]}\t\t{label_pred}\t{np.array2string(pred[0, :].detach().cpu().numpy(), precision=3, floatmode='fixed', separator=',', suppress_small=True)[1:-1]}"
+                        pred_name = [i for i,j in dataset.class_dict.items() if j == label_pred][0]
+                        val = f"{name[0].split('.csv')[0]}\t\t{pred_name}\t{np.array2string(pred[0, :].detach().cpu().numpy(), precision=3, floatmode='fixed', separator=',', suppress_small=True)[1:-1]}"
                         with open(
                             f"{src_folder}/test_results/mocaplab/results_{model_path}.csv",
                             "a",
@@ -436,7 +448,9 @@ if __name__ == "__main__":
                 # End training
                 print("#### FC End ####")
             except Exception as e:
+                import traceback
                 print(f"Error: {e}")
+                traceback.print_exc()
 
     # try:
     #     '''

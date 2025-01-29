@@ -10,7 +10,7 @@ def plot_results(train_accuracies, train_losses,
                  loss_function, optimizer_type, epochs,
                  learning_rates, early_stopping, patience, min_delta,
                  test_accuracy, test_confusion_matrix,
-                 stop_timestamp, model_path, misclassified):
+                 stop_timestamp, model_path, misclassified, labels=None):
     # Create figure
     fig, axs = plt.subplots(2, 2, figsize=(16, 9))
 
@@ -39,7 +39,13 @@ def plot_results(train_accuracies, train_losses,
     axs[0, 1].set_ylim([0, 1])
 
     # Plot confusion matrix
-    sns.heatmap(test_confusion_matrix, annot=True, cmap="flare",  fmt="d", cbar=True, ax=axs[1, 0])
+    if labels is not None:
+        ticks = [[i for i,j in labels.items() if j == k][0] for k in range(len(labels))]
+        total = sum(sum(test_confusion_matrix))
+        labels=[["%d\n%.2f"%(j,j/total*100) for j in i] for i in test_confusion_matrix.tolist()]
+        sns.heatmap(test_confusion_matrix, annot=True, cmap="flare", fmt="d", cbar=True, ax=axs[1, 0], xticklabels=ticks, yticklabels=ticks)
+    else:
+        sns.heatmap(test_confusion_matrix, annot=True, cmap="flare", fmt="d", cbar=True, ax=axs[1, 0])
 
     # Plot relevant data about the neural network and the training
     data = [
