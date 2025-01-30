@@ -150,7 +150,7 @@ class MocaplabDatatestsetFC(Dataset):
     
     def _load_data(self):
         # Retrieve labels
-        files = [i for i in os.listdir(self.path) if ("Annotation_gloses" not in i) or i.startswith("L")]
+        files = [i for i in os.listdir(self.path) if ("Annotation_gloses" not in i) and i.endswith(".csv") and i.startswith("LF3")]
         for file in files:
             self.x.append(file)
             # print(f"file {file}")

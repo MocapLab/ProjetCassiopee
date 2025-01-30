@@ -1,7 +1,7 @@
 import glob
 from ezc3d import c3d
 import csv
-import sys
+# import sys
 from itertools import chain
 import os
 import numpy as np

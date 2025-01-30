@@ -91,6 +91,10 @@ def train(
                         #exit(0)
                 else:
                     counter = 0
+                if epoch > 600:
+                    min_delta *= 10
+                    print(f"Min delta increased to {min_delta}")
+                    break
 
         run_epochs.append(epoch + 1)
 
@@ -246,7 +250,7 @@ def evaluate(model, type, data_loader, loss_function, device, weight=[0.5,0.5]):
 
     return validation_accuracy, validation_loss
 
-def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[.5,.5]):
+def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[.5,.5], class_dict=None):
     # Accuracy variables
     correct = 0
     total = 0
@@ -283,21 +287,23 @@ def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[.5,.
             # total += len(label)
             # correct += (predicted == label).sum().item()
             # weighted_batch_correct = (predicted == label)
-            weight_t = torch.clone(label)
-            for i_lab in range(len(label)):
-                weight_t[i_lab] = weight[int(label[i_lab].item())]
-            weighted_batch_correct = (predicted == label) * weight_t
+            # weight_t = torch.clone(label)
+            # for i_lab in range(len(label)):
+            #     weight_t[i_lab] = weight[int(label[i_lab].item())]
+            weighted_batch_correct = (predicted == label)
             for i_lab in range(len(label)):
                 class_idx = int(label[i_lab].item())
                 class_correct[class_idx] += weighted_batch_correct[i_lab].item()
                 class_total[class_idx] += len(predicted)
 
             correct += weighted_batch_correct.sum().item()
-            total += ((label == label) * weight_t).sum().item()
+            total += len(label)
 
-            for k in range(len(label)) :
-                if label[k]!=predicted[k] :
-                    misclassified.append((name[k], int(label[k].item()), output.data.cpu().numpy()[k]))
+            for k in range(len(label)):
+                if label[k]!=predicted[k]:
+                    ref = [i for i,j in class_dict.items() if j == label[k].item()][0]
+                    pred = [i for i,j in class_dict.items() if j == predicted[k].item()][0]
+                    misclassified.append((name[k], ref, pred, output.data.cpu().numpy()[k]))
 
             # Update confusion matrix variables
             if all_label is None and all_predicted is None:
@@ -309,6 +315,8 @@ def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[.5,.
             
     # Compute test accuracy
     test_accuracy = correct / total
+    test_accuracy = sum([class_correct[i] / total if class_total[i] != 0 else 0 for i in range(num_classes)])
+
     # test_accuracy = float(sum([class_correct[i] / total if class_total[i] != 0 else 0 for i in range(num_classes)]))/float(num_classes)
 
     # Create "confusion matrix"

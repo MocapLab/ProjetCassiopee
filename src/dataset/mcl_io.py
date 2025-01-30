@@ -2,7 +2,6 @@ import csv
 import numpy as np
 import os
 import pandas as pd
-import math
 
 def read_csv(csv_file, bones_to_keep=None, center=None, debug=False):
     data = []
@@ -16,19 +15,19 @@ def read_csv(csv_file, bones_to_keep=None, center=None, debug=False):
                 header_1 = line
                 out_header = list(set(header_1))
             if n == 1:
-                header_2 = line
+                # header_2 = line
                 if bones_to_keep is None:
                     bones_to_keep = out_header
                 id = {}
                 new_id = {}
                 nid = 0
                 for i, bone in enumerate(header_1):
-                    bone_type = header_2[i]
-                    if bone not in id.keys() and bone.removesuffix('_glob') in bones_to_keep and ((bone_type.startswith('T') and bone_type.endswith('_glob')) or (bone_type.startswith('R') and not bone_type.endswith('_glob'))):
+                    # bone_type = header_2[i]
+                    if bone not in id.keys() and bone.removesuffix('_glob') in bones_to_keep: # and ((bone_type.startswith('T') and bone_type.endswith('_glob')) or (bone_type.startswith('R') and not bone_type.endswith('_glob'))):
                         id[bone] = [i]
                         new_id[bone] = [nid]
                         nid += 1
-                    elif bone in id.keys() and bone.removesuffix('_glob') in bones_to_keep and ((bone_type.startswith('T') and bone_type.endswith('_glob')) or (bone_type.startswith('R') and not bone_type.endswith('_glob'))):
+                    elif bone in id.keys() and bone.removesuffix('_glob') in bones_to_keep:# and ((bone_type.startswith('T') and bone_type.endswith('_glob')) or (bone_type.startswith('R') and not bone_type.endswith('_glob'))):
                         id[bone].extend([i])
                         new_id[bone].extend([nid])
                         nid += 1
@@ -58,12 +57,16 @@ def load_data(path, class_dict, max_length=0, x=None, y=None, removed=None, col_
     if removed is None:
         removed = []
     # Retrieve files
+    if out_labels is None:
+        print("No files from labels found in path")
+        return
     files = [i.lower() for i in os.listdir(path)]
     for name, label in out_labels.items():
         filename = name + ".csv"
         
         if filename.lower() not in files:
             removed.append(filename)
+            continue
         else:
             data, out_header, bones_to_keep = read_csv(os.path.join(path, filename), bones_to_keep=bones_to_keep)
             length = len(data)

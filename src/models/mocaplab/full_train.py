@@ -7,7 +7,7 @@ src_folder = os.path.abspath(
 )
 sys.path.append(src_folder)
 import torch
-from torch.utils.data import DataLoader, WeightedRandomSampler, Subset
+from torch.utils.data import DataLoader, Subset
 from sklearn.model_selection import train_test_split
 
 from train import train, test
@@ -64,69 +64,72 @@ if __name__ == "__main__":
 
     generator = torch.Generator()
     generator.manual_seed(0)
-    data_path = "%s/data/mocaplab/Autoannotation" % src_folder
+    data_path = "%s/data/mocaplab/LSDICOS" % src_folder
     bones_to_keep = [
-        "CC_Base_Head",
-        "CC_Base_L_Clavicle",
-        "CC_Base_L_Upperarm",
-        "CC_Base_L_UpperarmTwist02",
-        "CC_Base_NeckTwist01",
-        "CC_Base_NeckTwist02",
-        "CC_Base_R_Clavicle",
-        "CC_Base_R_Upperarm",
-        "CC_Base_R_UpperarmTwist02",
-        "CC_Base_Spine01",
-        "CC_Base_Spine02",
-        "CC_Base_Waist",
-        "C_Base_NeckTwist01",
-        "hand_l",
-        "hand_r",
-        "index_01_l",
-        "index_01_r",
-        "index_02_l",
-        "index_02_r",
-        "index_03_l",
-        "index_03_r",
-        "index_metacarpal_l",
-        "index_metacarpal_r",
-        "lowerarm_l",
-        "lowerarm_r",
-        "lowerarm_twist_01_l",
-        "lowerarm_twist_01_r",
-        "middle_01_l",
-        "middle_01_r",
-        "middle_02_l",
-        "middle_02_r",
-        "middle_03_l",
-        "middle_03_r",
-        "middle_metacarpal_l",
-        "middle_metacarpal_r",
-        "pinky_01_l",
-        "pinky_01_r",
-        "pinky_02_l",
-        "pinky_02_r",
-        "pinky_03_l",
-        "pinky_03_r",
-        "pinky_metacarpal_l",
-        "pinky_metacarpal_r",
-        "ring_01_l",
-        "ring_01_r",
-        "ring_02_l",
-        "ring_02_r",
-        "ring_03_l",
-        "ring_03_r",
-        "ring_metacarpal_l",
-        "ring_metacarpal_r",
-        "thumb_01_l",
-        "thumb_01_r",
-        "thumb_02_l",
-        "thumb_02_r",
-        "thumb_03_l",
-        "thumb_03_r",
-    ]
+        'RUPA', 'LFWT', 'LELB', 'UPHD', 'RELBEXT', 'RCLAV', 'LBSHO', 'LELBEXT', 'RFWT', 'LCLAV', 'LBWT', 'LFSHO', 'CLAV', 'C7', 'RFHD', 'RBAC', 'RBSHO', 'RBWT', 'T10', 'LFRM', 'RELB', 'LBAC', 'LBHD', 'RBHD', 'LFHD', 'STRN', 'RFRM', 'RFSHO', 'LSHOULD', 'LUPA', 'RSHOULD']
+
+    # bones_to_keep = [
+    #     "CC_Base_Head",
+    #     "CC_Base_L_Clavicle",
+    #     "CC_Base_L_Upperarm",
+    #     "CC_Base_L_UpperarmTwist02",
+    #     "CC_Base_NeckTwist01",
+    #     "CC_Base_NeckTwist02",
+    #     "CC_Base_R_Clavicle",
+    #     "CC_Base_R_Upperarm",
+    #     "CC_Base_R_UpperarmTwist02",
+    #     "CC_Base_Spine01",
+    #     "CC_Base_Spine02",
+    #     "CC_Base_Waist",
+    #     "C_Base_NeckTwist01",
+    #     "hand_l",
+    #     "hand_r",
+    #     "index_01_l",
+    #     "index_01_r",
+    #     "index_02_l",
+    #     "index_02_r",
+    #     "index_03_l",
+    #     "index_03_r",
+    #     "index_metacarpal_l",
+    #     "index_metacarpal_r",
+    #     "lowerarm_l",
+    #     "lowerarm_r",
+    #     "lowerarm_twist_01_l",
+    #     "lowerarm_twist_01_r",
+    #     "middle_01_l",
+    #     "middle_01_r",
+    #     "middle_02_l",
+    #     "middle_02_r",
+    #     "middle_03_l",
+    #     "middle_03_r",
+    #     "middle_metacarpal_l",
+    #     "middle_metacarpal_r",
+    #     "pinky_01_l",
+    #     "pinky_01_r",
+    #     "pinky_02_l",
+    #     "pinky_02_r",
+    #     "pinky_03_l",
+    #     "pinky_03_r",
+    #     "pinky_metacarpal_l",
+    #     "pinky_metacarpal_r",
+    #     "ring_01_l",
+    #     "ring_01_r",
+    #     "ring_02_l",
+    #     "ring_02_r",
+    #     "ring_03_l",
+    #     "ring_03_r",
+    #     "ring_metacarpal_l",
+    #     "ring_metacarpal_r",
+    #     "thumb_01_l",
+    #     "thumb_01_r",
+    #     "thumb_02_l",
+    #     "thumb_02_r",
+    #     "thumb_03_l",
+    #     "thumb_03_r",
+    # ]
 
     data, out_header, _ = mcl_read_csv(
-        data_path + "/MLD_X0006_00003-00398-00686-1_CAM_V3.csv",
+        data_path + "/MLD_X0006_00003-00398-00686-1.csv",
         bones_to_keep=bones_to_keep,
     )
 
@@ -138,80 +141,81 @@ if __name__ == "__main__":
     # bones_to_keep = list(set("C7;C7;C7;T10;T10;T10;LBAC;LBAC;LBAC;RBAC;RBAC;RBAC;CLAV;CLAV;CLAV;STRN;STRN;STRN;LCLAV;LCLAV;LCLAV;RCLAV;RCLAV;RCLAV;LFSHO;LFSHO;LFSHO;LSHOULD;LSHOULD;LSHOULD;LBSHO;LBSHO;LBSHO;LUPA;LUPA;LUPA;LELB;LELB;LELB;LELBEXT;LELBEXT;LELBEXT;LFRM;LFRM;LFRM;LWRA;LWRA;LWRA;LWRB;LWRB;LWRB;RFSHO;RFSHO;RFSHO;RSHOULD;RSHOULD;RSHOULD;RBSHO;RBSHO;RBSHO;RUPA;RUPA;RUPA;RELB;RELB;RELB;RELBEXT;RELBEXT;RELBEXT;RFRM;RFRM;RFRM;RWRA;RWRA;RWRA;RWRB;RWRB;RWRB;LFWT;LFWT;LFWT;RFWT;RFWT;RFWT;LBWT;LBWT;LBWT;RBWT;RBWT;RBWT".split(';')))
 
     if True:
-        for colnum in range(34, 0, -1):
-            bones_to_keep = [
-                "CC_Base_Head",
-                "CC_Base_L_Clavicle",
-                "CC_Base_L_Upperarm",
-                "CC_Base_L_UpperarmTwist02",
-                "CC_Base_NeckTwist01",
-                "CC_Base_NeckTwist02",
-                "CC_Base_R_Clavicle",
-                "CC_Base_R_Upperarm",
-                "CC_Base_R_UpperarmTwist02",
-                "CC_Base_Spine01",
-                "CC_Base_Spine02",
-                "CC_Base_Waist",
-                "C_Base_NeckTwist01",
-                "hand_l",
-                "hand_r",
-                "index_01_l",
-                "index_01_r",
-                "index_02_l",
-                "index_02_r",
-                "index_03_l",
-                "index_03_r",
-                "index_metacarpal_l",
-                "index_metacarpal_r",
-                "lowerarm_l",
-                "lowerarm_r",
-                "lowerarm_twist_01_l",
-                "lowerarm_twist_01_r",
-                "middle_01_l",
-                "middle_01_r",
-                "middle_02_l",
-                "middle_02_r",
-                "middle_03_l",
-                "middle_03_r",
-                "middle_metacarpal_l",
-                "middle_metacarpal_r",
-                "pinky_01_l",
-                "pinky_01_r",
-                "pinky_02_l",
-                "pinky_02_r",
-                "pinky_03_l",
-                "pinky_03_r",
-                "pinky_metacarpal_l",
-                "pinky_metacarpal_r",
-                "ring_01_l",
-                "ring_01_r",
-                "ring_02_l",
-                "ring_02_r",
-                "ring_03_l",
-                "ring_03_r",
-                "ring_metacarpal_l",
-                "ring_metacarpal_r",
-                "thumb_01_l",
-                "thumb_01_r",
-                "thumb_02_l",
-                "thumb_02_r",
-                "thumb_03_l",
-                "thumb_03_r",
-            ]
+        for colnum in range(1, 10, 1):
+            # bones_to_keep = [
+            #     "CC_Base_Head",
+            #     "CC_Base_L_Clavicle",
+            #     "CC_Base_L_Upperarm",
+            #     "CC_Base_L_UpperarmTwist02",
+            #     "CC_Base_NeckTwist01",
+            #     "CC_Base_NeckTwist02",
+            #     "CC_Base_R_Clavicle",
+            #     "CC_Base_R_Upperarm",
+            #     "CC_Base_R_UpperarmTwist02",
+            #     "CC_Base_Spine01",
+            #     "CC_Base_Spine02",
+            #     "CC_Base_Waist",
+            #     "C_Base_NeckTwist01",
+            #     "hand_l",
+            #     "hand_r",
+            #     "index_01_l",
+            #     "index_01_r",
+            #     "index_02_l",
+            #     "index_02_r",
+            #     "index_03_l",
+            #     "index_03_r",
+            #     "index_metacarpal_l",
+            #     "index_metacarpal_r",
+            #     "lowerarm_l",
+            #     "lowerarm_r",
+            #     "lowerarm_twist_01_l",
+            #     "lowerarm_twist_01_r",
+            #     "middle_01_l",
+            #     "middle_01_r",
+            #     "middle_02_l",
+            #     "middle_02_r",
+            #     "middle_03_l",
+            #     "middle_03_r",
+            #     "middle_metacarpal_l",
+            #     "middle_metacarpal_r",
+            #     "pinky_01_l",
+            #     "pinky_01_r",
+            #     "pinky_02_l",
+            #     "pinky_02_r",
+            #     "pinky_03_l",
+            #     "pinky_03_r",
+            #     "pinky_metacarpal_l",
+            #     "pinky_metacarpal_r",
+            #     "ring_01_l",
+            #     "ring_01_r",
+            #     "ring_02_l",
+            #     "ring_02_r",
+            #     "ring_03_l",
+            #     "ring_03_r",
+            #     "ring_metacarpal_l",
+            #     "ring_metacarpal_r",
+            #     "thumb_01_l",
+            #     "thumb_01_r",
+            #     "thumb_02_l",
+            #     "thumb_02_r",
+            #     "thumb_03_l",
+            #     "thumb_03_r",
+            # ]
 
-            if colnum >= 10:
-                bones_to_keep = bones_to_keep[27:]
-                indexes = flatten(
-                    [
-                        flatten([out_header[i + "_glob"] for i in bones_to_keep]),
-                        flatten([out_header[i] for i in bones_to_keep]),
-                    ]
-                )
-                indexes.sort()
-                data_neutal = data[0:1, indexes]
+            # if colnum >= 10:
+            #     bones_to_keep = bones_to_keep[27:]
+            #     indexes = flatten(
+            #         [
+            #             flatten([out_header[i + "_glob"] for i in bones_to_keep]),
+            #             flatten([out_header[i] for i in bones_to_keep]),
+            #         ]
+            #     )
+            #     indexes.sort()
+            #     data_neutal = data[0:1, indexes]
 
-            else:
-                data_neutal = data[0:1, :]
+            # else:
+            #     data_neutal = data[0:1, :]
+            data_neutal = data[0:1, :]
 
             dataset = MocaplabDatasetFC(
                 data_path,
@@ -312,27 +316,6 @@ if __name__ == "__main__":
                 param.requires_grad = True
             for param in model.fc3.parameters():
                 param.requires_grad = True
-            """state_dict = torch.load("self_supervised_learning/dev/ProjetCassiopee/data/mocaplab/Cassiopée_Allbones")
-            
-            flattened_state_dict = {}
-            for key, val in state_dict.items():
-                for sub_key, sub_val in val.items():
-                    new_key = key + '.' + sub_key
-                    flattened_state_dict[new_key] = sub_val
-            
-            model.load_state_dict(state_dict=flattened_state_dict)
-
-            # Désactiver le calcul du gradient pour tous les paramètres du modèle
-            for param in model.parameters():
-                param.requires_grad = False
-
-            # Activer le calcul du gradient pour les paramètres de fc1, fc2, fc3
-            for param in model.fc1.parameters():
-                param.requires_grad = True
-            #for param in model.fc2.parameters():
-            #    param.requires_grad = True
-            #for param in model.fc3.parameters():
-            #    param.requires_grad = True"""
 
             # Save training time start
             start_timestamp = datetime.now()
@@ -373,10 +356,10 @@ if __name__ == "__main__":
                 test_acc, test_confusion_matrix, misclassified = test(
                     model, "FC", test_data_loader, DEVICE, class_dict=dataset.class_dict
                 )
-                print(f"")
+                print("")
                 print(f"Test accuracy: {test_acc}")
                 print(f"Test confusion matrix: {test_confusion_matrix}")
-                print(f"")
+                print("")
                 # Plot results
                 if test_acc > 0.8:
                     # plot_results(train_acc, train_loss,
@@ -409,25 +392,25 @@ if __name__ == "__main__":
                         "%.3f, %.3f" % (test_acc, all_acc),
                         all_confusion_matrix,
                         stop_timestamp,
-                        model_path + "full",
+                        "C3D"+model_path + "full",
                         [colnum],
                         labels = dataset.class_dict
                     )
                     print(f"missclassified : {all_misclassified}")
                     with open(
                         "%s/train_results/mocaplab/%s"
-                        % (src_folder, model_path + "full")
+                        % (src_folder, "C3D"+model_path + "full")
                         + ".txt",
                         "w",
                     ) as f:
                         for i in all_misclassified:
-                            f.write("%s %s %s %s\n" %(i[0].replace("_CAM_V3.csv",""),i[1],i[2],np.array2string(i[3], precision=3, floatmode='fixed', separator=',', suppress_small=True)[1:-1]))
+                            f.write("%s %s %s %s\n" %(i[0],i[1],i[2],np.array2string(i[3], precision=3, floatmode='fixed', separator=',', suppress_small=True)[1:-1]))
 
                 # Save model
                 if test_acc > 0.9:
                     torch.save(
                         model.state_dict(),
-                        "%s/src/models/mocaplab/all/saved_models/FC/%s.ckpt"
+                        "%s/src/models/mocaplab/all/saved_models/FC/C3D%s.ckpt"
                         % (src_folder, model_path),
                     )
 
@@ -441,7 +424,7 @@ if __name__ == "__main__":
                         pred_name = [i for i,j in dataset.class_dict.items() if j == label_pred][0]
                         val = f"{name[0].split('.csv')[0]}\t\t{pred_name}\t{np.array2string(pred[0, :].detach().cpu().numpy(), precision=3, floatmode='fixed', separator=',', suppress_small=True)[1:-1]}"
                         with open(
-                            f"{src_folder}/test_results/mocaplab/results_{model_path}.csv",
+                            f"{src_folder}/test_results/mocaplab/C3Dresults_{model_path}.csv",
                             "a",
                         ) as f:
                             f.write("%s\n" % val)
@@ -827,7 +810,7 @@ if __name__ == "__main__":
                     "w",
                 ) as f:
                     for i in all_misclassified:
-                        f.write("%s %s %s\n" %(i[0].replace("_CAM_V3.csv",""),i[1],np.array2string(i[2], precision=3, floatmode='fixed', separator=',', suppress_small=True)[1:-1]))
+                        f.write("%s %s %s\n" %(i[0],i[1],np.array2string(i[2], precision=3, floatmode='fixed', separator=',', suppress_small=True)[1:-1]))
 
             if test_acc > 0.9:
                 # Save model
