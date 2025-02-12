@@ -129,6 +129,9 @@ class MocaplabDatatestsetFC(Dataset):
     
     def read_csv(self, csv_file) :
         data, self.header, self.bones_to_keep = mcl_read_csv(csv_file, self.bones_to_keep, center=self.center)
+        if data is None:
+            print(f"{csv_file} is empty")
+            return None
         if data.shape[1]!=len(self.bones_to_keep)*6:
             ValueError(f"missing {set(self.bones_to_keep) - set(self.header)}, for {csv_file}")
         return data
@@ -152,6 +155,13 @@ class MocaplabDatatestsetFC(Dataset):
         # Retrieve labels
         files = [i for i in os.listdir(self.path) if ("Annotation_gloses" not in i) and i.endswith(".csv") and i.startswith("LF3")]
         for file in files:
+            data, out_header, bones_to_keep = mcl_read_csv(os.path.join(self.path,file), bones_to_keep=self.bones_to_keep)
+            if data is None:
+                self.removed.append(file)
+                continue
+            if np.isnan(data).any():
+                self.removed.append(file)
+                continue
             self.x.append(file)
             # print(f"file {file}")
             with open(os.path.join(self.path, file)) as f:
@@ -161,6 +171,8 @@ class MocaplabDatatestsetFC(Dataset):
         data_path = os.path.join(self.path, self.x[idx])
 
         data = self.read_csv(data_path)
+        if self is None:
+            return None, self.x[idx]
 
         if self.padding:
             data = data.tolist()

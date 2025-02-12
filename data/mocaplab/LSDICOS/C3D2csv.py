@@ -7,20 +7,20 @@ import os
 import numpy as np
 glob_dir = os.path.dirname(os.path.realpath(__file__))
 
-list_c3d = glob.glob(os.path.join(glob_dir,"*","*","*.c3d"))
+list_c3d = glob.glob(os.path.join(glob_dir,"*","*.c3d"))
 if not list_c3d:
     print('no c3d found')
 
-other_c3d = glob.glob(r"\\Jiraya\prod\MCL_LSDICOLSF_T02\40_*\00_*\*\*\*\*.c3d")
-if not other_c3d:
-    print('no c3d found')
-else:
-    list_c3d.extend(other_c3d)
-other_c3d = glob.glob(r"\\Jiraya\prod\MCL_LSDICO3D\40_*\00_*\*\*\*\*.c3d")
-if not other_c3d:
-    print('no c3d found')
-else:
-    list_c3d.extend(other_c3d)
+# other_c3d = glob.glob(r"\\Jiraya\prod\MCL_LSDICOLSF_T02\40_*\00_*\*\*\*\*.c3d")
+# if not other_c3d:
+#     print('no c3d found')
+# else:
+#     list_c3d.extend(other_c3d)
+# other_c3d = glob.glob(r"\\Jiraya\prod\MCL_LSDICO3D\40_*\00_*\*\*\*\*.c3d")
+# if not other_c3d:
+#     print('no c3d found')
+# else:
+#     list_c3d.extend(other_c3d)
 sub_sample_points = ['RUPA', 'LFWT', 'LELB', 'UPHD', 'RELBEXT', 'RCLAV', 'LBSHO', 'LELBEXT', 'RFWT', 'LCLAV', 'LBWT', 'LFSHO', 'CLAV', 'C7', 'RFHD', 'RBAC', 'RBSHO', 'RBWT', 'T10', 'LFRM', 'RELB', 'LBAC', 'LBHD', 'RBHD', 'LFHD', 'STRN', 'RFRM', 'RFSHO', 'LSHOULD', 'LUPA', 'RSHOULD']
 all_missing = []
 for c3d_path in list_c3d:

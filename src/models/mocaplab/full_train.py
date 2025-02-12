@@ -57,7 +57,7 @@ if __name__ == "__main__":
     EPOCHS = [999999]  # Number of epochs
     LEARNING_RATES = [0.01]  # Learning rates
     EARLY_STOPPING = True  # Early stopping flag
-    PATIENCE = 20  # Early stopping patience
+    PATIENCE = 40  # Early stopping patience
     MIN_DELTA = 0.001  # Early stopping minimum delta
 
     DEBUG = False  # Debug flag
@@ -141,11 +141,11 @@ if __name__ == "__main__":
     # bones_to_keep = list(set("C7;C7;C7;T10;T10;T10;LBAC;LBAC;LBAC;RBAC;RBAC;RBAC;CLAV;CLAV;CLAV;STRN;STRN;STRN;LCLAV;LCLAV;LCLAV;RCLAV;RCLAV;RCLAV;LFSHO;LFSHO;LFSHO;LSHOULD;LSHOULD;LSHOULD;LBSHO;LBSHO;LBSHO;LUPA;LUPA;LUPA;LELB;LELB;LELB;LELBEXT;LELBEXT;LELBEXT;LFRM;LFRM;LFRM;LWRA;LWRA;LWRA;LWRB;LWRB;LWRB;RFSHO;RFSHO;RFSHO;RSHOULD;RSHOULD;RSHOULD;RBSHO;RBSHO;RBSHO;RUPA;RUPA;RUPA;RELB;RELB;RELB;RELBEXT;RELBEXT;RELBEXT;RFRM;RFRM;RFRM;RWRA;RWRA;RWRA;RWRB;RWRB;RWRB;LFWT;LFWT;LFWT;RFWT;RFWT;RFWT;LBWT;LBWT;LBWT;RBWT;RBWT;RBWT".split(';')))
 
     if True:
-        for colnum in range(1, 10, 1):
+        for colnum in range(1, 7, 1):
             # bones_to_keep = [
             #     "CC_Base_Head",
             #     "CC_Base_L_Clavicle",
-            #     "CC_Base_L_Upperarm",
+            #     "CC_sBase_L_Upperarm",
             #     "CC_Base_L_UpperarmTwist02",
             #     "CC_Base_NeckTwist01",
             #     "CC_Base_NeckTwist02",
@@ -215,8 +215,7 @@ if __name__ == "__main__":
 
             # else:
             #     data_neutal = data[0:1, :]
-            data_neutal = data[0:1, :]
-
+            #data_neutal = None
             dataset = MocaplabDatasetFC(
                 data_path,
                 padding=True,
@@ -240,12 +239,14 @@ if __name__ == "__main__":
             n = len(dataset)
             class_weights_dict = (
                 dataset.get_labels_weights()
-            )  # inverse relative amount of samples per class
+            )
+            # inverse relative amount of samples per class
             # sample_weights = [0] * n
             # class_weights = [
             #     class_weights_dict[label] for label in class_weights_dict.keys()
             # ]
-            class_weights = [0.5,0.5]
+            class_weights_dict[class_weights_dict.keys()[0]]
+            class_weights = [[0.5,0.5]]
             # for idx in range(n):
             #     (data, label, name) = dataset[idx]
             #     sample_weights[idx] = class_weights_dict[label]

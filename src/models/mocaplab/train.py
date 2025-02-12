@@ -108,14 +108,12 @@ def train_one_epoch(model, type, data_loader, loss_function, optimizer, device, 
         weight = [0.5,0.5]
 
     # Initialise accuracy variables
-    total = 0
-    correct = 0
-
-    # Initialise loss
-    train_loss = 0.0
     num_classes = 2
     class_correct = [0 for _ in range(num_classes)]
     class_total = [0 for _ in range(num_classes)]
+
+    # Initialise loss
+    train_loss = 0.0
 
     # Pass over all batches
     for i, batch in enumerate(data_loader):
@@ -145,25 +143,21 @@ def train_one_epoch(model, type, data_loader, loss_function, optimizer, device, 
         # total += len(label)
         # correct += (predicted == label).sum().item()
         # weighted_batch_correct = (predicted == label)
-        weight_t = torch.clone(label)
-        for i_lab in range(len(label)):
-            weight_t[i_lab] = weight[int(label[i_lab].item())]
-        weighted_batch_correct = (predicted == label) * weight_t
-        for i_lab in range(len(label)):
-            class_idx = int(label[i_lab].item())
-            class_correct[class_idx] += weighted_batch_correct[i_lab].item()
-            class_total[class_idx] += weight_t[i_lab].item()
-        
-        correct += weighted_batch_correct.sum().item()
-        total += ((label == label) * weight_t).sum().item()
+        unique_labels, counts = torch.unique(label, return_counts=True)
+        label_counts = dict(zip(unique_labels.tolist(), counts.tolist()))
+
+        for i_class in unique_labels:
+            test = label==i_class
+            class_correct[int(i_class.item())] += (predicted[test]==label[test]).sum().item()
+            class_total[int(i_class.item())] += len(test)
 
         # Compute loss
-        # loss_function.weight = torch.tensor(weight, dtype=torch.float).to(device)
+        loss_function.weight = torch.tensor(weight, dtype=torch.float).to(device)
         loss = loss_function(output, label.to(device).long())
 
         # Compute gradient loss
         loss.backward()
-
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         # Update weights
         optimizer.step()
 
@@ -173,11 +167,11 @@ def train_one_epoch(model, type, data_loader, loss_function, optimizer, device, 
         # Log
         if i % 5 == 0:
             # Batch loss
-            print(f"    Batch {i:8}: accuracy={weighted_batch_correct.sum().item() / total:.4f} | loss={loss:.4f}")
+            accuracy_batch = sum([(predicted[label == i_class]==label[label==i_class]).sum().item()/label_counts[i_class.item()] for i_class in unique_labels])/len(unique_labels)
+            print(f"    Batch {i:8}: accuracy={accuracy_batch:.4f} | loss={loss:.4f}")
 
     # Compute validation accuracy and loss
-    train_accuracy = correct / total
-    train_accuracy = sum([class_correct[i] / class_total[i]*weight[i] if class_total[i] != 0 else 0 for i in range(num_classes)])
+    train_accuracy = sum([class_correct[i_class] / class_total[i_class] if class_total[i_class] != 0 else 0 for i_class in range(num_classes)])
     train_loss /= (i + 1) # Average loss over all batches of the epoch
     
     return train_accuracy, train_loss
@@ -185,8 +179,6 @@ def train_one_epoch(model, type, data_loader, loss_function, optimizer, device, 
 def evaluate(model, type, data_loader, loss_function, device, weight=[0.5,0.5]):
     
     # Initialise accuracy variables
-    total = 0
-    correct = 0
 
     # Initialise losses
     validation_loss = 0.0
@@ -219,30 +211,25 @@ def evaluate(model, type, data_loader, loss_function, device, weight=[0.5,0.5]):
             _, predicted = torch.max(output.data, dim=1)
             # total += len(label)
             # batch_correct = (predicted == label).sum().item()
-            weight_t = torch.clone(label)
-            for i_lab in range(len(label)):
-                weight_t[i_lab] = weight[int(label[i_lab].item())]
-            weighted_batch_correct = (predicted == label) * weight_t
-            for i_lab in range(len(label)):
-                class_idx = int(label[i_lab].item())
-                class_correct[class_idx] += weighted_batch_correct[i_lab].item()
-                class_total[class_idx] += weight_t[i_lab].item()
-            
-            correct += weighted_batch_correct.sum().item()
-            total += ((label == label) * weight_t).sum().item()
+            unique_labels, counts = torch.unique(label, return_counts=True)
+            label_counts = dict(zip(unique_labels.tolist(), counts.tolist()))
+
+            for i_class in range(num_classes):
+                test = label==i_class
+                class_correct[int(i_class)] += (predicted[test]==label[test]).sum().item()
+                class_total[int(i_class)] += len(test)
             
             # correct += batch_correct
             # Compute loss
-            # loss_function.weight = torch.tensor(weight, dtype=torch.float).to(device)
+            loss_function.weight = torch.tensor(weight, dtype=torch.float).to(device)
             loss = loss_function(output, label.cuda().long())
 
             # Update batch loss
             validation_loss += loss.item()
 
     # Compute validation accuracy and loss
-    if total != 0:
-        validation_accuracy = correct / total
-        validation_accuracy = sum([class_correct[i] / class_total[i]*weight[i] if class_total[i] != 0 else 0 for i in range(num_classes)])
+    if sum(class_total) != 0:
+        validation_accuracy = sum([(predicted[label == i_class]==label[label==i_class]).sum().item()/label_counts[i_class.item()] for i_class in unique_labels])/num_classes
         validation_loss /= (i + 1)      # Average loss over all batches of the epoch
     else :
         validation_accuracy = 0
@@ -252,8 +239,6 @@ def evaluate(model, type, data_loader, loss_function, device, weight=[0.5,0.5]):
 
 def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[.5,.5], class_dict=None):
     # Accuracy variables
-    correct = 0
-    total = 0
 
     # Confusion matrix variables
     all_label = None
@@ -284,25 +269,19 @@ def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[.5,.
             # Update accuracy variables
             _, predicted = torch.max(output.data, dim=1)
 
-            # total += len(label)
-            # correct += (predicted == label).sum().item()
-            # weighted_batch_correct = (predicted == label)
-            # weight_t = torch.clone(label)
-            # for i_lab in range(len(label)):
-            #     weight_t[i_lab] = weight[int(label[i_lab].item())]
-            weighted_batch_correct = (predicted == label)
-            for i_lab in range(len(label)):
-                class_idx = int(label[i_lab].item())
-                class_correct[class_idx] += weighted_batch_correct[i_lab].item()
-                class_total[class_idx] += len(predicted)
+            
+            unique_labels, counts = torch.unique(label, return_counts=True)
+            # label_counts = dict(zip(unique_labels.tolist(), counts.tolist()))
 
-            correct += weighted_batch_correct.sum().item()
-            total += len(label)
+            for i_class in unique_labels:
+                test = label==i_class
+                class_correct[int(i_class.item())] += (predicted[test]==label[test]).sum().item()
+                class_total[int(i_class.item())] += len(test)
 
             for k in range(len(label)):
                 if label[k]!=predicted[k]:
-                    ref = [i for i,j in class_dict.items() if j == label[k].item()][0]
-                    pred = [i for i,j in class_dict.items() if j == predicted[k].item()][0]
+                    ref = [i_temp for i_temp,j in class_dict.items() if j == label[k].item()][0]
+                    pred = [i_temp for i_temp,j in class_dict.items() if j == predicted[k].item()][0]
                     misclassified.append((name[k], ref, pred, output.data.cpu().numpy()[k]))
 
             # Update confusion matrix variables
@@ -314,8 +293,7 @@ def test(model, type, test_data_loader, device=torch.device("cpu"), weight=[.5,.
                 all_predicted = torch.cat((all_predicted, predicted))
             
     # Compute test accuracy
-    test_accuracy = correct / total
-    test_accuracy = sum([class_correct[i] / total if class_total[i] != 0 else 0 for i in range(num_classes)])
+    test_accuracy = sum([class_correct[i_class] / class_total[i_class] if class_total[i_class] != 0 else 0 for i_class in range(num_classes)])
 
     # test_accuracy = float(sum([class_correct[i] / total if class_total[i] != 0 else 0 for i in range(num_classes)]))/float(num_classes)
 

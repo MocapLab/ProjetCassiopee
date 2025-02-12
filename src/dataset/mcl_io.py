@@ -39,6 +39,8 @@ def read_csv(csv_file, bones_to_keep=None, center=None, debug=False):
                             values.append(float(line[i]))
                     data.append(values)
             n+=1
+        if len(data) == 0:
+            return None, None, None
         data = np.stack(data)
         if center is not None:
             data = data - center
@@ -70,7 +72,9 @@ def load_data(path, class_dict, max_length=0, x=None, y=None, removed=None, col_
         else:
             data, out_header, bones_to_keep = read_csv(os.path.join(path, filename), bones_to_keep=bones_to_keep)
             length = len(data)
-
+        if data is None or np.isnan(data).any():
+            removed.append(filename)
+            continue
         if force_max_length and length> max_length:
             removed.append(filename)
         else:
